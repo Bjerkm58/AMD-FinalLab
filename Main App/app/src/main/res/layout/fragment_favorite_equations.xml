@@ -1,0 +1,48 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.vellaj48.myapplication.favoriteEquations"
+    android:clickable="false">
+
+    <!-- TODO: Update blank fragment layout -->
+
+
+    <EditText
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText1"
+        android:layout_gravity="left|top"
+        android:layout_marginTop="20dp"
+        android:text="N/A"
+        android:layout_weight="1"
+        android:onClick="highlight"
+        android:editable="false"
+        android:inputType="none" />
+
+    <EditText
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText2"
+        android:layout_gravity="left|top"
+        android:layout_marginTop="20dp"
+        android:text="N/A"
+        android:layout_weight="1"
+        android:onClick="highlight"
+        android:editable="false" />
+
+    <EditText
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText3"
+        android:layout_gravity="left|top"
+        android:text="N/A"
+        android:layout_weight="1"
+        android:layout_marginTop="20dp"
+        android:onClick="highlight"
+        android:editable="false"
+        android:inputType="none" />
+
+
+
+
+</LinearLayout>

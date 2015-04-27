@@ -1,0 +1,23 @@
+When a user downloads their app, they will be prompted to select TWO activation codes.  One to activate the app, the other to turn it off. 
+	Perhaps the application will auto-generate sample codes for stupid people. 
+During setup, the requirement for letters and numbers will be explained so users create something complicated (yet rememberable) 
+	THis is because the device will be reading EVERY text message sent to it.
+		Meaning if they make their activation codes "on" and "off" every time a friend includes the words "on" and "off" in a text it would activate the app.
+	The nice thing about this is you can lose your device anywhere.  Meaning you would be around different people every time.  
+		This allows any friend (or nearby potential new friend) to text your phone and activate the app.
+Users can also see an "update" button their pass phrases.  This is because once a passphrase is used, it is no longer secure as somebody elses device had to send it.
+If a device is turned off manually, the user will have to enter the de-activation code on the device.  
+	This is so that if the device is stolen, said thief cannot simply turn off the application.
+	
+That is it in terms the default settings. 
+Once these passphrase are set, the device reads all incomming SMS text messages, 
+	When it reads the activation code it will turn the audio to full blast, and play music until it is found, recieves the de-activation code via another text, is turned off manually, or runs out of batter life.
+If the user cannot hear their phone they can text the de-activation code to set the device back to silent and to stop playing music. 
+
+When a user opens up the application there will also be an "advanced" button.  This button will be my personal project to add extra things to the app granted I have time.
+Some of the features I would like to add are:
+GPS functionality - respond to any texts which contain the activation code with a GPS location. 
+Personalized audio recording - allowing users to record their own audible notification for when the phone reads the activation code.
+Wifi description - respond to any texts which contain the activation code and respond with what wifi signals it is attached to or nearby
+Brick phone - for anybody who has sensitive information on their phone, an extra activation code can be created that will reset the phone to default settings
+

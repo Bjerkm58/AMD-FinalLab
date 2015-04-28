@@ -20,18 +20,6 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.lang.*;
 
-
-
-class BlackBox {
-
-    public BlackBox(View v) {
-        String buttonValue = ((Button)v).getText().toString();
-
-    }
-
-}
-
-
 public class MainActivity extends ActionBarActivity {
     public final static String MY_MSG = "com.example.erik.myfirstapp.MESSAGE";
 
@@ -49,68 +37,6 @@ public class MainActivity extends ActionBarActivity {
 
     public boolean[] saveBooleanStates = new boolean[5]; // saves the states of boolean values when we move to create variables.
 
-    public String button(View v){
-        return ((Button) v.findViewById(v.getId())).getText().toString();
-    }
-    public String display(Cursor s){
-        return s.getString(
-                s.getColumnIndexOrThrow(
-                        NumberContract.VariableEntry.VARIABLE_NAME));
-    }
-    public String currentUser(Cursor s)
-    {
-        return s.getString(
-                s.getColumnIndexOrThrow(
-                        NumberContract.VariableEntry.VARIABLE_CURRENT_USER));
-    }
-    public String dbEquation(Cursor s){
-        return s.getString(
-                s.getColumnIndexOrThrow(
-                        NumberContract.VariableEntry.VARIABLE_EQUATION));
-    }
-    public EditText expression(boolean vars) {
-       return (vars) ? (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8) : (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.equation);
-    }
-    public char nthLast(int n, String s){
-        return s.charAt(s.length()- n);
-    }
-    public void enableEqual()
-    {
-        findViewById(R.id.button7).setEnabled(leftParenthesesUsed == 0);
-    }
-    public EditText varName()
-    {
-       return (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText7);
-    }
-    public void reEnableGreys(){
-
-        findViewById(R.id.button29).setEnabled(true);
-        findViewById(R.id.button7).setEnabled(true);
-        findViewById(R.id.useSaved).setEnabled(true);
-        findViewById(R.id.button28).setEnabled(true);
-    }
-    public Cursor cursor(){
-
-        NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
-        SQLiteDatabase db = ndbh.getReadableDatabase();
-        String[] projection = {
-                NumberContract.VariableEntry.VARIABLE_NAME,
-                NumberContract.VariableEntry.VARIABLE_EQUATION,
-                NumberContract.VariableEntry.VARIABLE_CURRENT_USER,
-        };
-
-        //SELECT * FROM numbers
-        return db.query(
-                NumberContract.VariableEntry.VARIABLE_TABLE_NAME,
-                projection,
-                null,  //String
-                null,  //String[]
-                null,
-                null,
-                null,
-                null
-        );
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,43 +48,61 @@ public class MainActivity extends ActionBarActivity {
             .add(R.id.favorite_equation_frame, new favoriteEquations())
         .commit();
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     public void addNumbers(View v) {
-        if (!operatorRequired && !variableUsed) {
-            expression(creatingVariables).append(button(v));
+        if (nAn()) {
+            expression().append(button(v));
             enableEqual();
-            operatorUsed = false;
+        }
+        else if(!lastCharIs(')')){
+            expression().append(button(v));
+            enableEqual();
         }
     }
 
     public void addDecimal(View v) {
-        if (!decimalUsed && !variableUsed) {
+        if (!decimalUsed && !nAn()) {
             // gets the editText containing the equation in the fragment fragment_equation.xml
-            expression(creatingVariables).append(button(v));
-            enableEqual();
+            expression().append(button(v));
             decimalUsed = true;
-            numbersRequired = true;
         }
     }
 
     public void addParentheses(View v) {
-        if(operatorUsed || expression(creatingVariables).length() == 0) {
+        if(nAn()) {
             if ((button(v).equals("(")))
             // we are adding a left parentheses after an operation  ex: "9 + "
             // OR we are adding a parentheses to an empty equation ex: ""
             {
-                expression(creatingVariables).append(button(v) + " ");
+                expression().append(button(v) + " ");
                 // updates misc variables preventing user error
                 leftParenthesesUsed++;
-                decimalUsed = false;
-                operatorUsed = true;
+
             } else if (leftParenthesesUsed > 0) // (parentheses == ')')    aka right parentheses is used
             {
                 // updates the expression
-                expression(creatingVariables).append(" " + button(v));
+                expression().append(" " + button(v));
                 // updates misc variables preventing user error
-                decimalUsed = true;
-                operatorRequired = true;
                 leftParenthesesUsed--;
                 enableEqual();
             }
@@ -166,11 +110,9 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void addOperators(View v) {
-        if (operatorUsed == false) {
+        if (!nAn()) {
                 // gets the editText containing the equation in the fragment fragment_equation.xml
-                expression(creatingVariables).append(" " + button(v) + " ");
-                operatorUsed = true;
-                operatorRequired = false;
+                expression().append(" " + button(v) + " ");
                 variableUsed = false;
             }
         }
@@ -181,11 +123,7 @@ public class MainActivity extends ActionBarActivity {
         ContentValues cv = new ContentValues();
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase sdb = n.getWritableDatabase();
-        String equation = expression(true).toString(); // equation
-        String varName = varName().toString(); // variable name
         Cursor s = cursor();
-
-
         s.moveToFirst();
 
         boolean foundVarName = false, foundEquation = false;
@@ -194,12 +132,12 @@ public class MainActivity extends ActionBarActivity {
 
             if(currentUser(s).equalsIgnoreCase(currentUserId))
             {
-                if (display(s).equalsIgnoreCase(varName)) // does this variable name exist?
+                if (display(s).equalsIgnoreCase(varName().toString())) // does this variable name exist?
                 {
                     foundVarName = true;
                     break;
                 }
-                if (dbEquation(s).equalsIgnoreCase(equation)) // does equation already exist?
+                if (dbEquation(s).equalsIgnoreCase(expression().toString())) // does equation already exist?
                 {
                     foundEquation = true;
                     break;
@@ -216,7 +154,7 @@ public class MainActivity extends ActionBarActivity {
         }
         if (!foundVarName && !foundEquation) {
             // re-enables greyed out buttons
-            reEnableGreys();
+            reEnableGreyedOut();
             // restores all boolean values as we are going back to the calculator
 
             decimalUsed = saveBooleanStates[0];
@@ -227,11 +165,10 @@ public class MainActivity extends ActionBarActivity {
 
             String defaultSavedEquations = "SavedEquationSlot";
             //creating the database
-            cv.put(NumberContract.VariableEntry.VARIABLE_NAME, varName);
+            cv.put(NumberContract.VariableEntry.VARIABLE_NAME, varName().toString());
             // could also be written cv.put("username", id);
-            cv.put(NumberContract.VariableEntry.VARIABLE_EQUATION, equation);
+            cv.put(NumberContract.VariableEntry.VARIABLE_EQUATION, expression().toString());
             cv.put(NumberContract.VariableEntry.VARIABLE_CURRENT_USER, currentUserId);
-            //INSERT INTO TABLE_NAME VALUES (whatever the values in each row are);
             //INSERT INTO TABLE_NAME VALUES (whatever the values in each row are);
             sdb.insert(NumberContract.VariableEntry.VARIABLE_TABLE_NAME, "null", cv);
             sdb.close();
@@ -240,48 +177,48 @@ public class MainActivity extends ActionBarActivity {
             creatingVariables = false;
             // waits for the commits to execute BEFORE trying to do stuff to the newly loaded fragments text.
             getFragmentManager().executePendingTransactions();
-            expression(true).append(savedEquation);
+            expression().append(savedEquation);
         }
     }
 
     public void backSpace(View v) {
-            String expression = expression(creatingVariables).toString();
+            String expression = expression().toString();
 
             if (expression.length() > 0) // if we actually have an expression
             {
-                if (nthLast(1, expression) == '.') // removes decimals
+                if (lastCharIs('.')) // removes decimals
                 {
                     // sets the new string to the equation editText in fragment_equation.xml
-                    expression(creatingVariables).setText(expression.substring(0, expression.length() - 1));
+                    expression().setText(expression.substring(0, expression.length() - 1));
 
                     // updates misc variables preventing user error
                     decimalUsed = false;
                     operatorUsed = false;
                     numbersRequired = false;
                     decimalWasUsed--;
-                } else if (nthLast(1, expression) == ' ') // if we have a blank space we are reading a parentheses or an operator
+                } else if (lastCharIs(' ')) // if we have a blank space we are reading a parentheses or an operator
                 {
-                    if (nthLast(1, expression) == '(' && expression.length() > 2)  // all expressions NOT starting with "(" ex "8 + ( 9 )"
+                    if (lastCharIs('(') && expression.length() > 2)  // all expressions NOT starting with "(" ex "8 + ( 9 )"
                     {
                         // reduces the total number counter of left parentheses used
                         leftParenthesesUsed--;
                         enableEqual();
                         // sets the new equation to the editText in fragment_equation.xml
-                        expression(creatingVariables).setText(expression.substring(0, expression.length()-2));
+                        expression().setText(expression.substring(0, expression.length()-2));
 
-                    } else if (nthLast(1, expression)  == '(' && expression.length() == 2) // if our first character is a "(" ex "("
+                    } else if (lastCharIs('(')  && expression.length() == 2) // if our first character is a "(" ex "("
                     {
                         leftParenthesesUsed--;
                         enableEqual();
-                        expression(creatingVariables).setText(expression.substring(0, expression.length() - 2));
+                        expression().setText(expression.substring(0, expression.length() - 2));
 
                     } else // reading an operator ex "% * + - /"
                     {
-                        expression(creatingVariables).setText(expression.substring(0, expression.length() - 3));
+                        expression().setText(expression.substring(0, expression.length() - 3));
                         operatorUsed = false;
                         enableEqual();
                     }
-                } else if (nthLast(1, expression) == ')') // if we are reading a right parentheses
+                } else if (lastCharIs(')')) // if we are reading a right parentheses
                 {
                     // adds to the number of left parentheses used because we now have 1 less right parentheses
                     leftParenthesesUsed++;
@@ -289,15 +226,15 @@ public class MainActivity extends ActionBarActivity {
 
                     // makes the equal button clickable
                     enableEqual();
-                    expression(creatingVariables).setText(expression.substring(0, expression.length() - 2));
+                    expression().setText(expression.substring(0, expression.length() - 2));
                 } else // otherwise we are reading a number
                 {
-                    if (nthLast(1, expression) == ' ')// if there is an empty space we are done with numbers
+                    if (lastCharIs(' '))// if there is an empty space we are done with numbers
                     {
                         operatorUsed = true;
-                        expression(creatingVariables).setText(expression.substring(0, expression.length() - 1));
+                        expression().setText(expression.substring(0, expression.length() - 1));
                     } else {
-                        expression(creatingVariables).setText(expression.substring(0, expression.length() - 1));
+                        expression().setText(expression.substring(0, expression.length() - 1));
                         operatorUsed = false;
                     }
                 }
@@ -308,7 +245,7 @@ public class MainActivity extends ActionBarActivity {
 
     public void makeNegative(View v) {
         // gets the editText containing the equation in the fragment fragment_equation.xml
-       String expression = expression(creatingVariables).toString();
+       String expression = expression().toString();
         if (expression.length() > 0) {
             String[] elements = expression.split("\\s+"); // delimit by whitespace throw into an array
 
@@ -332,7 +269,7 @@ public class MainActivity extends ActionBarActivity {
                 }
 
             }
-            expression(creatingVariables).setText(expression);
+            expression().setText(expression);
         }
 
 
@@ -342,7 +279,7 @@ public class MainActivity extends ActionBarActivity {
     public void clearExpression(View v) {
 
         // gets the editText containing the equation in the fragment fragment_equation.xml
-        expression(creatingVariables).setText("");
+        expression().setText("");
         operatorUsed = true;
         decimalUsed = false;
         leftParenthesesUsed = 0;
@@ -640,10 +577,8 @@ public class MainActivity extends ActionBarActivity {
 
     public void showVariableCreatorFragment(View v)
     {
-        createVariables showMyButtons = new createVariables();
-
         getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.equation_Frame)).commit();
-        getFragmentManager().beginTransaction().add(R.id.equation_Frame, showMyButtons).commit();
+        getFragmentManager().beginTransaction().add(R.id.equation_Frame, new createVariables()).commit();
     }
 
 
@@ -879,29 +814,6 @@ public class MainActivity extends ActionBarActivity {
         answer = sendMsg;
         return rslt;
 
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     // checks to see which equation has been selected
@@ -1395,5 +1307,86 @@ public class MainActivity extends ActionBarActivity {
             //Toast.makeText(getApplication(), "rwar" + currentUserId + " c " + currentUser, Toast.LENGTH_SHORT).show();
             s.moveToNext();
         }
+    }
+    public boolean nAn(char c)
+    {
+        try{
+            Double d = ((double) c);
+            return false;
+        }
+        catch(NumberFormatException nfe)
+        {
+            return true;
+        }
+    }
+    public boolean nAn()
+    {
+       return nAn(expression().toString().charAt(expression().length() -1));
+    }
+    public String button(View v){
+        return ((Button) v.findViewById(v.getId())).getText().toString();
+    }
+    public String display(Cursor s){
+        return s.getString(
+                s.getColumnIndexOrThrow(
+                        NumberContract.VariableEntry.VARIABLE_NAME));
+    }
+    public String currentUser(Cursor s)
+    {
+        return s.getString(
+                s.getColumnIndexOrThrow(
+                        NumberContract.VariableEntry.VARIABLE_CURRENT_USER));
+    }
+    public String dbEquation(Cursor s){
+        return s.getString(
+                s.getColumnIndexOrThrow(
+                        NumberContract.VariableEntry.VARIABLE_EQUATION));
+    }
+    public EditText expression() {
+        return (creatingVariables) ? (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8) : (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.equation);
+    }
+    public char nthLast(int n){
+        return expression().toString().charAt(expression().length() - n);
+    }
+    public boolean lastCharIs(char c)
+    {
+        return expression().toString().charAt(expression().length() - 1) == c;
+    }
+    public void enableEqual()
+    {
+        findViewById(R.id.button7).setEnabled(leftParenthesesUsed == 0);
+    }
+    public EditText varName()
+    {
+        return (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText7);
+    }
+    public void reEnableGreyedOut(){
+
+        findViewById(R.id.button29).setEnabled(true);
+        findViewById(R.id.button7).setEnabled(true);
+        findViewById(R.id.useSaved).setEnabled(true);
+        findViewById(R.id.button28).setEnabled(true);
+    }
+    public Cursor cursor(){
+
+        NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
+        SQLiteDatabase db = ndbh.getReadableDatabase();
+        String[] projection = {
+                NumberContract.VariableEntry.VARIABLE_NAME,
+                NumberContract.VariableEntry.VARIABLE_EQUATION,
+                NumberContract.VariableEntry.VARIABLE_CURRENT_USER,
+        };
+
+        //SELECT * FROM numbers
+        return db.query(
+                NumberContract.VariableEntry.VARIABLE_TABLE_NAME,
+                projection,
+                null,  //String
+                null,  //String[]
+                null,
+                null,
+                null,
+                null
+        );
     }
 }

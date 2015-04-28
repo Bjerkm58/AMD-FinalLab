@@ -1,8 +1,6 @@
 package com.example.vellaj48.myapplication;
 
-import android.app.FragmentTransaction;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -15,7 +13,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +20,16 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.lang.*;
 
+
+
+class BlackBox {
+
+    public BlackBox(View v) {
+        String buttonValue = ((Button)v).getText().toString();
+
+    }
+
+}
 
 
 public class MainActivity extends ActionBarActivity {
@@ -42,281 +49,50 @@ public class MainActivity extends ActionBarActivity {
 
     public boolean[] saveBooleanStates = new boolean[5]; // saves the states of boolean values when we move to create variables.
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        /*  // to load up buttons fragment
-        ButtonsFragment calculatorButtons = new ButtonsFragment();
-        FragmentTransaction calc = getFragmentManager()
-                .beginTransaction();
-        //add frag Fragment to view
-        calc.add(R.id.button_Frame, calculatorButtons);
-        calc.commit();
-        */
-
-        loginFragment calculatorButtons = new loginFragment();
-        FragmentTransaction calc = getFragmentManager()
-                .beginTransaction();
-        //add frag Fragment to view
-        calc.add(R.id.button_Frame, calculatorButtons);
-        calc.commit();
-
-
-        EquationFragment equation = new EquationFragment();
-        FragmentTransaction f = getFragmentManager()
-                .beginTransaction();
-        //add frag Fragment to view
-        f.add(R.id.equation_Frame, equation);
-        f.commit();
-
-        favoriteEquations favEquation = new favoriteEquations();
-        FragmentTransaction favEq = getFragmentManager()
-                .beginTransaction();
-        //add frag Fragment to view
-        favEq.add(R.id.favorite_equation_frame, favEquation);
-        favEq.commit();
+    public String button(View v){
+        return ((Button) v.findViewById(v.getId())).getText().toString();
     }
-
-    public void addNumbers(View v) {
-
-        if (operatorRequired == false && variableUsed==false) {
-            // gets the editText containing the equation in the fragment fragment_equation.xml
-            String mathExpression = "";
-
-            if(creatingVariables == false)
-            {
-                EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-                mathExpression = expression.getText();
-                Button button = (Button) findViewById(v.getId());
-                String buttonName = button.getText().toString();
-
-                mathExpression = mathExpression + buttonName;
-                operatorUsed = false;
-                numbersRequired = false;
-                if(leftParenthesesUsed ==0)
-                {
-                    // makes the equal button clickable
-                    Button greySavedEquations = (Button) findViewById(R.id.button7);
-                    greySavedEquations.setEnabled(true);
-                }
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquation(mathExpression);
-            }
-            else
-            {
-                createVariables expression = (createVariables) getFragmentManager().findFragmentById(R.id.equation_Frame);
-                mathExpression = expression.getTextVariable();
-                Button button = (Button) findViewById(v.getId());
-                String buttonName = button.getText().toString();
-
-                mathExpression = mathExpression + buttonName;
-                operatorUsed = false;
-                numbersRequired = false;
-
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquationVariable(mathExpression);
-            }
-
-        }
+    public String display(Cursor s){
+        return s.getString(
+                s.getColumnIndexOrThrow(
+                        NumberContract.VariableEntry.VARIABLE_NAME));
     }
-
-    public void addDecimal(View v) {
-        if (decimalUsed == false && variableUsed==false) {
-            // gets the editText containing the equation in the fragment fragment_equation.xml
-            if (creatingVariables == false )
-            {
-                EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-                String mathExpression = expression.getText();
-
-                Button button = (Button) findViewById(v.getId());
-                String buttonName = button.getText().toString();
-                mathExpression = mathExpression + buttonName;
-
-                // makes the equal button clickable
-                Button greySavedEquations = (Button)findViewById(R.id.button7);
-                greySavedEquations.setEnabled(true);
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquation(mathExpression);
-
-                // updates misc variables preventing user error
-                decimalUsed = true;
-                numbersRequired = true;
-                decimalWasUsed++;
-            }
-            else
-            {
-                createVariables expression = (createVariables) getFragmentManager().findFragmentById(R.id.equation_Frame);
-                String mathExpression = expression.getTextVariable();
-
-                Button button = (Button) findViewById(v.getId());
-                String buttonName = button.getText().toString();
-                mathExpression = mathExpression + buttonName;
-
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquationVariable(mathExpression);
-
-                // updates misc variables preventing user error
-                decimalUsed = true;
-                numbersRequired = true;
-                decimalWasUsed++;
-            }
-        }
+    public String currentUser(Cursor s)
+    {
+        return s.getString(
+                s.getColumnIndexOrThrow(
+                        NumberContract.VariableEntry.VARIABLE_CURRENT_USER));
     }
-
-    public void addParentheses(View v) {
-        if (creatingVariables == false)
-        {
-            // gets the editText containing the equation in the fragment fragment_equation.xml
-            EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-            String mathExpression = expression.getText();
-
-            // gets the character in the button pressed
-            Button button = (Button) findViewById(v.getId());
-            String buttonName = button.getText().toString();
-
-            char parentheses = buttonName.charAt(0);
-            if ((parentheses == '(' && operatorUsed == true) || (parentheses == '(' && mathExpression.length() == 0))
-            // we are adding a left parentheses after an operation  ex: "9 + "
-            // OR we are adding a parentheses to an empty equation ex: ""
-            {
-                // updates the expression
-                mathExpression = mathExpression + buttonName + " ";
-
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquation(mathExpression);
-
-                // updates misc variables preventing user error
-                leftParenthesesUsed++;
-                decimalUsed = false;
-                operatorUsed = true;
-            } else if (leftParenthesesUsed > 0 && operatorUsed == false) // (parentheses == ')')    aka right parentheses is used
-            {
-                // updates the expression
-                mathExpression = mathExpression + " " + buttonName;
-
-                // updates misc variables preventing user error
-                decimalUsed = true;
-                operatorRequired = true;
-                leftParenthesesUsed--;
-
-
-                if(leftParenthesesUsed ==0)
-                {
-                    // makes the equal button clickable
-                    Button greySavedEquations = (Button) findViewById(R.id.button7);
-                    greySavedEquations.setEnabled(true);
-                }
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquation(mathExpression);
-
-
-            }
-        }
-        else // we are editing a different text field, use different stuff
-        {
-            // gets the editText containing the equation in the fragment fragment_equation.xml
-            createVariables expression = (createVariables) getFragmentManager().findFragmentById(R.id.equation_Frame);  // changed
-            String mathExpression = expression.getTextVariable(); // changed
-
-            // gets the character in the button pressed
-            Button button = (Button) findViewById(v.getId());
-            String buttonName = button.getText().toString();
-
-            char parentheses = buttonName.charAt(0);
-            if ((parentheses == '(' && operatorUsed == true) || (parentheses == '(' && mathExpression.length() == 0))
-            // we are adding a left parentheses after an operation  ex: "9 + "
-            // OR we are adding a parentheses to an empty equation ex: ""
-            {
-                // updates the expression
-                mathExpression = mathExpression + buttonName + " ";
-
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquationVariable(mathExpression); // changed
-
-                // updates misc variables preventing user error
-                leftParenthesesUsed++;
-                decimalUsed = false;
-                operatorUsed = true;
-            } else if (leftParenthesesUsed > 0 && operatorUsed == false) // (parentheses == ')')    aka right parentheses is used
-            {
-                // updates the expression
-                mathExpression = mathExpression + " " + buttonName;
-
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquationVariable(mathExpression); // changed
-
-                // updates misc variables preventing user error
-                leftParenthesesUsed--;
-                decimalUsed = true;
-                operatorRequired = true;
-            }
-        }
+    public String dbEquation(Cursor s){
+        return s.getString(
+                s.getColumnIndexOrThrow(
+                        NumberContract.VariableEntry.VARIABLE_EQUATION));
     }
-
-    public void addOperators(View v) {
-        if (operatorUsed == false) {
-            if (creatingVariables == false)
-            {
-                // gets the editText containing the equation in the fragment fragment_equation.xml
-                EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-                String mathExpression = expression.getText();
-
-                // grabs the character in the button pressed
-                Button button = (Button) findViewById(v.getId());
-                String buttonName = button.getText().toString();
-
-                // updates the equation string
-                mathExpression = mathExpression + " " + buttonName + " ";
-
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquation(mathExpression);
-                Button greySavedEquations = (Button)findViewById(R.id.button7);
-                greySavedEquations.setEnabled(false);
-                // updates misc variables preventing user error
-                operatorUsed = true;
-                decimalUsed = false;
-                operatorRequired = false;
-                variableUsed = false;
-            }
-            else
-            {
-                // gets the editText containing the equation in the fragment fragment_equation.xml
-                createVariables expression = (createVariables) getFragmentManager().findFragmentById(R.id.equation_Frame);
-                String mathExpression = expression.getTextVariable();
-
-                // grabs the character in the button pressed
-                Button button = (Button) findViewById(v.getId());
-                String buttonName = button.getText().toString();
-
-                // updates the equation string
-                mathExpression = mathExpression + " " + buttonName + " ";
-
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquationVariable(mathExpression);
-
-                // updates misc variables preventing user error
-                operatorUsed = true;
-                decimalUsed = false;
-                operatorRequired = false;
-                variableUsed = false;
-            }
-        }
-
+    public EditText expression(boolean vars) {
+       return (vars) ? (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8) : (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.equation);
     }
+    public char nthLast(int n, String s){
+        return s.charAt(s.length()- n);
+    }
+    public void enableEqual()
+    {
+        findViewById(R.id.button7).setEnabled(leftParenthesesUsed == 0);
+    }
+    public EditText varName()
+    {
+       return (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText7);
+    }
+    public void reEnableGreys(){
 
-    public void addNewVariable(View v) {
+        findViewById(R.id.button29).setEnabled(true);
+        findViewById(R.id.button7).setEnabled(true);
+        findViewById(R.id.useSaved).setEnabled(true);
+        findViewById(R.id.button28).setEnabled(true);
+    }
+    public Cursor cursor(){
 
-        NumberDBHelper n = new NumberDBHelper(getApplicationContext());
-        SQLiteDatabase sdb = n.getWritableDatabase();
         NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase db = ndbh.getReadableDatabase();
-        ContentValues cv = new ContentValues();
-
-        String equation = ((EditText) findViewById(R.id.editText8)).getText().toString(); // equation
-        String varName = ((EditText) findViewById(R.id.editText7)).getText().toString(); // variable name
-
         String[] projection = {
                 NumberContract.VariableEntry.VARIABLE_NAME,
                 NumberContract.VariableEntry.VARIABLE_EQUATION,
@@ -324,7 +100,7 @@ public class MainActivity extends ActionBarActivity {
         };
 
         //SELECT * FROM numbers
-        Cursor s = db.query(
+        return db.query(
                 NumberContract.VariableEntry.VARIABLE_TABLE_NAME,
                 projection,
                 null,  //String
@@ -334,29 +110,96 @@ public class MainActivity extends ActionBarActivity {
                 null,
                 null
         );
+    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        getFragmentManager()
+            .beginTransaction()
+            .add(R.id.button_Frame, new loginFragment())
+            .add(R.id.equation_Frame, new EquationFragment())
+            .add(R.id.favorite_equation_frame, new favoriteEquations())
+        .commit();
+    }
+
+    public void addNumbers(View v) {
+        if (!operatorRequired && !variableUsed) {
+            expression(creatingVariables).append(button(v));
+            enableEqual();
+            operatorUsed = false;
+        }
+    }
+
+    public void addDecimal(View v) {
+        if (!decimalUsed && !variableUsed) {
+            // gets the editText containing the equation in the fragment fragment_equation.xml
+            expression(creatingVariables).append(button(v));
+            enableEqual();
+            decimalUsed = true;
+            numbersRequired = true;
+        }
+    }
+
+    public void addParentheses(View v) {
+        if(operatorUsed || expression(creatingVariables).length() == 0) {
+            if ((button(v).equals("(")))
+            // we are adding a left parentheses after an operation  ex: "9 + "
+            // OR we are adding a parentheses to an empty equation ex: ""
+            {
+                expression(creatingVariables).append(button(v) + " ");
+                // updates misc variables preventing user error
+                leftParenthesesUsed++;
+                decimalUsed = false;
+                operatorUsed = true;
+            } else if (leftParenthesesUsed > 0) // (parentheses == ')')    aka right parentheses is used
+            {
+                // updates the expression
+                expression(creatingVariables).append(" " + button(v));
+                // updates misc variables preventing user error
+                decimalUsed = true;
+                operatorRequired = true;
+                leftParenthesesUsed--;
+                enableEqual();
+            }
+        }
+    }
+
+    public void addOperators(View v) {
+        if (operatorUsed == false) {
+                // gets the editText containing the equation in the fragment fragment_equation.xml
+                expression(creatingVariables).append(" " + button(v) + " ");
+                operatorUsed = true;
+                operatorRequired = false;
+                variableUsed = false;
+            }
+        }
+
+
+
+    public void addNewVariable(View v) {
+        ContentValues cv = new ContentValues();
+        NumberDBHelper n = new NumberDBHelper(getApplicationContext());
+        SQLiteDatabase sdb = n.getWritableDatabase();
+        String equation = expression(true).toString(); // equation
+        String varName = varName().toString(); // variable name
+        Cursor s = cursor();
+
 
         s.moveToFirst();
-        String display = "", DBequation = "",currentUser = "";
+
         boolean foundVarName = false, foundEquation = false;
 
         while (!s.isAfterLast()) {
-            display = s.getString(
-                    s.getColumnIndexOrThrow(
-                            NumberContract.VariableEntry.VARIABLE_NAME));
-            DBequation = s.getString(
-                    s.getColumnIndexOrThrow(
-                            NumberContract.VariableEntry.VARIABLE_EQUATION));
-            currentUser = s.getString(
-                    s.getColumnIndexOrThrow(
-                            NumberContract.VariableEntry.VARIABLE_CURRENT_USER));
-            if(currentUser.equalsIgnoreCase(currentUserId))
+
+            if(currentUser(s).equalsIgnoreCase(currentUserId))
             {
-                if (display.equalsIgnoreCase(varName)) // does this variable name exist?
+                if (display(s).equalsIgnoreCase(varName)) // does this variable name exist?
                 {
                     foundVarName = true;
                     break;
                 }
-                if (DBequation.equalsIgnoreCase(equation)) // does equation already exist?
+                if (dbEquation(s).equalsIgnoreCase(equation)) // does equation already exist?
                 {
                     foundEquation = true;
                     break;
@@ -365,22 +208,15 @@ public class MainActivity extends ActionBarActivity {
             //else do nothing move to the new users.
             s.moveToNext();
         }
-        if (foundVarName == true) {
+        if (foundVarName) {
             Toast.makeText(getApplication(), "Variable Name already exists", Toast.LENGTH_SHORT).show();
         }
-        if (foundEquation == true) {
+        if (foundEquation) {
             Toast.makeText(getApplication(), "Equation already exists", Toast.LENGTH_SHORT).show();
         }
-        if (foundVarName == false && foundEquation == false) {
+        if (!foundVarName && !foundEquation) {
             // re-enables greyed out buttons
-            Button greyCreateNewVariableButton = (Button)findViewById(R.id.button29);
-            greyCreateNewVariableButton.setEnabled(true);
-            Button greyEqualsButton = (Button)findViewById(R.id.button7);
-            greyEqualsButton.setEnabled(true);
-            Button greyUseVariablesButton = (Button)findViewById(R.id.useSaved);
-            greyUseVariablesButton.setEnabled(true);
-            Button greySavedEquations = (Button)findViewById(R.id.button28);
-            greySavedEquations.setEnabled(true);
+            reEnableGreys();
             // restores all boolean values as we are going back to the calculator
 
             decimalUsed = saveBooleanStates[0];
@@ -399,298 +235,128 @@ public class MainActivity extends ActionBarActivity {
             //INSERT INTO TABLE_NAME VALUES (whatever the values in each row are);
             sdb.insert(NumberContract.VariableEntry.VARIABLE_TABLE_NAME, "null", cv);
             sdb.close();
-
-            EquationFragment showMyButtons = new EquationFragment();
-
             getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.equation_Frame)).commit();
-            getFragmentManager().beginTransaction().add(R.id.equation_Frame, showMyButtons).commit();
+            getFragmentManager().beginTransaction().add(R.id.equation_Frame, new EquationFragment()).commit();
             creatingVariables = false;
-
             // waits for the commits to execute BEFORE trying to do stuff to the newly loaded fragments text.
             getFragmentManager().executePendingTransactions();
-            EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-            expression.setEquation(savedEquation);
+            expression(true).append(savedEquation);
         }
-        foundEquation = false;
-        foundVarName = false;
-        //((TextView)findViewById(R.id.dbValues)).setText(display);
-
     }
 
     public void backSpace(View v) {
-        if (creatingVariables == false) {
-            // gets the editText containing the equation in the fragment fragment_equation.xml
-            EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-            String mathExpression = expression.getText();
+            String expression = expression(creatingVariables).toString();
 
-            char leftParenthesesCheck = ' ';
-            if (mathExpression.length() > 0) // if we actually have an expression
+            if (expression.length() > 0) // if we actually have an expression
             {
-                char getDecimalOrOperator = mathExpression.charAt(mathExpression.length() - 1);
-                if (mathExpression.length() > 1) // if our string is longer than 2 characters, meaning there is not a single number ex "3"
+                if (nthLast(1, expression) == '.') // removes decimals
                 {
-                    // grab the 2nd last digit to check if its a parentheses later in the code
-                    leftParenthesesCheck = mathExpression.charAt(mathExpression.length() - 2);
-                }
-                if (getDecimalOrOperator == '.')  // removes decimals
-                {
-                    // updates the equation
-                    String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 1);
-
                     // sets the new string to the equation editText in fragment_equation.xml
-                    expression.setEquation(expressionMinusOne);
+                    expression(creatingVariables).setText(expression.substring(0, expression.length() - 1));
 
                     // updates misc variables preventing user error
                     decimalUsed = false;
                     operatorUsed = false;
                     numbersRequired = false;
                     decimalWasUsed--;
-                } else if (getDecimalOrOperator == ' ') // if we have a blank space we are reading a parentheses or an operator
+                } else if (nthLast(1, expression) == ' ') // if we have a blank space we are reading a parentheses or an operator
                 {
-                    if (leftParenthesesCheck == '(' && mathExpression.length() > 2)  // all expressions NOT starting with "(" ex "8 + ( 9 )"
+                    if (nthLast(1, expression) == '(' && expression.length() > 2)  // all expressions NOT starting with "(" ex "8 + ( 9 )"
                     {
                         // reduces the total number counter of left parentheses used
                         leftParenthesesUsed--;
-                        if(leftParenthesesUsed ==0)
-                        {
-                            // makes the equal button clickable
-                            Button greySavedEquations = (Button) findViewById(R.id.button7);
-                            greySavedEquations.setEnabled(true);
-                        }
-                        // updates the equation
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 2);
-
+                        enableEqual();
                         // sets the new equation to the editText in fragment_equation.xml
-                        expression.setEquation(expressionMinusOne);
+                        expression(creatingVariables).setText(expression.substring(0, expression.length()-2));
 
-                    } else if (leftParenthesesCheck == '(' && mathExpression.length() == 2) // if our first character is a "(" ex "("
+                    } else if (nthLast(1, expression)  == '(' && expression.length() == 2) // if our first character is a "(" ex "("
                     {
                         leftParenthesesUsed--;
-                        if(leftParenthesesUsed ==0)
-                        {
-                            // makes the equal button clickable
-                            Button greySavedEquations = (Button) findViewById(R.id.button7);
-                            greySavedEquations.setEnabled(true);
-                        }
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 2);
-                        expression.setEquation(expressionMinusOne);
+                        enableEqual();
+                        expression(creatingVariables).setText(expression.substring(0, expression.length() - 2));
 
                     } else // reading an operator ex "% * + - /"
                     {
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 3);
-                        expression.setEquation(expressionMinusOne);
+                        expression(creatingVariables).setText(expression.substring(0, expression.length() - 3));
                         operatorUsed = false;
-                        if(leftParenthesesUsed ==0)
-                        {
-                            // makes the equal button clickable
-                            Button greySavedEquations = (Button) findViewById(R.id.button7);
-                            greySavedEquations.setEnabled(true);
-                        }
+                        enableEqual();
                     }
-                } else if (getDecimalOrOperator == ')') // if we are reading a right parentheses
+                } else if (nthLast(1, expression) == ')') // if we are reading a right parentheses
                 {
                     // adds to the number of left parentheses used because we now have 1 less right parentheses
                     leftParenthesesUsed++;
                     operatorRequired = false;
 
                     // makes the equal button clickable
-                    Button greySavedEquations = (Button) findViewById(R.id.button7);
-                    greySavedEquations.setEnabled(false);
-
-                    String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 2);
-                    expression.setEquation(expressionMinusOne);
+                    enableEqual();
+                    expression(creatingVariables).setText(expression.substring(0, expression.length() - 2));
                 } else // otherwise we are reading a number
                 {
-                    if (leftParenthesesCheck == ' ')// if there is an empty space we are done with numbers
+                    if (nthLast(1, expression) == ' ')// if there is an empty space we are done with numbers
                     {
                         operatorUsed = true;
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 1);
-                        expression.setEquation(expressionMinusOne);
+                        expression(creatingVariables).setText(expression.substring(0, expression.length() - 1));
                     } else {
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 1);
-                        expression.setEquation(expressionMinusOne);
+                        expression(creatingVariables).setText(expression.substring(0, expression.length() - 1));
                         operatorUsed = false;
                     }
                 }
             }
         }
-        else
-        {
-            // gets the editText containing the equation in the fragment fragment_equation.xml
-            createVariables expression = (createVariables) getFragmentManager().findFragmentById(R.id.equation_Frame);
-            String mathExpression = expression.getTextVariable();
 
-            char leftParenthesesCheck = ' ';
-            if (mathExpression.length() > 0) // if we actually have an expression
-            {
-                char getDecimalOrOperator = mathExpression.charAt(mathExpression.length() - 1);
-                if (mathExpression.length() > 1) // if our string is longer than 2 characters, meaning there is not a single number ex "3"
-                {
-                    // grab the 2nd last digit to check if its a parentheses later in the code
-                    leftParenthesesCheck = mathExpression.charAt(mathExpression.length() - 2);
-                }
-                if (getDecimalOrOperator == '.')  // removes decimals
-                {
-                    // updates the equation
-                    String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 1);
 
-                    // sets the new string to the equation editText in fragment_equation.xml
-                    expression.setEquationVariable(expressionMinusOne);
 
-                    // updates misc variables preventing user error
-                    decimalUsed = false;
-                    operatorUsed = false;
-                    numbersRequired = false;
-                    decimalWasUsed--;
-                } else if (getDecimalOrOperator == ' ') // if we have a blank space we are reading a parentheses or an operator
-                {
-                    if (leftParenthesesCheck == '(' && mathExpression.length() > 2)  // all expressions NOT starting with "(" ex "8 + ( 9 )"
-                    {
-                        // reduces the total number counter of left parentheses used
-                        leftParenthesesUsed--;
-
-                        // updates the equation
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 3);
-
-                        // sets the new equation to the editText in fragment_equation.xml
-                        expression.setEquationVariable(expressionMinusOne);
-
-                    } else if (leftParenthesesCheck == '(' && mathExpression.length() == 2) // if our first character is a "(" ex "("
-                    {
-                        leftParenthesesUsed--;
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 2);
-                        expression.setEquationVariable(expressionMinusOne);
-
-                    } else // reading an operator ex "% * + - /"
-                    {
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 3);
-                        expression.setEquationVariable(expressionMinusOne);
-                        operatorUsed = false;
-                    }
-                } else if (getDecimalOrOperator == ')') // if we are reading a right parentheses
-                {
-                    // adds to the number of left parentheses used because we now have 1 less right parentheses
-                    leftParenthesesUsed++;
-                    operatorRequired = false;
-
-                    String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 1);
-                    expression.setEquationVariable(expressionMinusOne);
-                } else // otherwise we are reading a number
-                {
-                    if (leftParenthesesCheck == ' ')// if there is an empty space we are done with numbers
-                    {
-                        operatorUsed = true;
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 1);
-                        expression.setEquationVariable(expressionMinusOne);
-                    } else {
-                        String expressionMinusOne = mathExpression.substring(0, mathExpression.length() - 1);
-                        expression.setEquationVariable(expressionMinusOne);
-                        operatorUsed = false;
-                    }
-                }
-            }
-        }
-    }
     public void makeNegative(View v) {
         // gets the editText containing the equation in the fragment fragment_equation.xml
-        if (creatingVariables == false) {
-            EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-            String mathExpression = expression.getText();
+       String expression = expression(creatingVariables).toString();
+        if (expression.length() > 0) {
+            String[] elements = expression.split("\\s+"); // delimit by whitespace throw into an array
 
-
-            // if we actually have something to make negative
-            if (mathExpression.length() > 0) {
-                String[] elements = mathExpression.split("\\s+"); // delimit by whitespace throw into an array
-
-                // if what we have is a digit
-                if (Character.isDigit(elements[elements.length - 1].charAt(0))
-                        || elements[elements.length - 1].charAt(0) == '.') {
-                    elements[elements.length - 1] = "-" + elements[elements.length - 1];
-                    mathExpression = elements[0];
-                    for (int i = 1; i < elements.length; i++) {
-                        mathExpression = mathExpression + " " + elements[i];
-                    }
+            // if what we have is a digit
+            if (Character.isDigit(elements[elements.length - 1].charAt(0))
+                    || elements[elements.length - 1].charAt(0) == '.') {
+                elements[elements.length - 1] = "-" + elements[elements.length - 1];
+                expression = elements[0];
+                for (int i = 1; i < elements.length; i++) {
+                    expression = expression + " " + elements[i];
                 }
-                // if its a negative sign,
-                else if (elements[elements.length - 1].charAt(0) == '-') {
-                    if (elements[elements.length - 1].length() > 1) {
-                        elements[elements.length - 1] = elements[elements.length - 1].substring(1);
-                        mathExpression = elements[0];
-                        for (int i = 1; i < elements.length; i++) {
-                            mathExpression = mathExpression + " " + elements[i];
-                        }
-                    }
-
-                }
-                expression.setEquation(mathExpression);
             }
-        }
-        else {
-            createVariables expression = (createVariables) getFragmentManager().findFragmentById(R.id.equation_Frame);
-            String mathExpression = expression.getTextVariable();
-
-            // if we actually have something to make negative
-            if (mathExpression.length() > 0) {
-                String[] elements = mathExpression.split("\\s+"); // delimit by whitespace throw into an array
-
-                // if what we have is a digit
-                if (Character.isDigit(elements[elements.length - 1].charAt(0))
-                        || elements[elements.length - 1].charAt(0) == '.') {
-                    elements[elements.length - 1] = "-" + elements[elements.length - 1];
-                    mathExpression = elements[0];
+            // if its a negative sign,
+            else if (elements[elements.length - 1].charAt(0) == '-') {
+                if (elements[elements.length - 1].length() > 1) {
+                    elements[elements.length - 1] = elements[elements.length - 1].substring(1);
+                    expression = elements[0];
                     for (int i = 1; i < elements.length; i++) {
-                        mathExpression = mathExpression + " " + elements[i];
+                        expression = expression + " " + elements[i];
                     }
                 }
-                // if its a negative sign,
-                else if (elements[elements.length - 1].charAt(0) == '-') {
-                    if (elements[elements.length - 1].length() > 1) {
-                        elements[elements.length - 1] = elements[elements.length - 1].substring(1);
-                        mathExpression = elements[0];
-                        for (int i = 1; i < elements.length; i++) {
-                            mathExpression = mathExpression + " " + elements[i];
-                        }
-                    }
 
-                }
-                expression.setEquationVariable(mathExpression);
             }
+            expression(creatingVariables).setText(expression);
         }
+
+
     }
 
+
     public void clearExpression(View v) {
-        if(creatingVariables == false) {
-            // gets the editText containing the equation in the fragment fragment_equation.xml
-            EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-            expression.setEquation("");
-            operatorUsed = true;
-            decimalUsed = false;
-            leftParenthesesUsed = 0;
 
-            numbersRequired = false;  // used only for after decimal used
-            operatorRequired = false;  // used only for after right parentheses ")"
-            decimalWasUsed = 0;
-            variableUsed = false;
-        }
-        else
-        {
-            createVariables expression = (createVariables) getFragmentManager().findFragmentById(R.id.equation_Frame);
-            expression.setEquationVariable("");
-            operatorUsed = true;
-            decimalUsed = false;
-            leftParenthesesUsed = 0;
+        // gets the editText containing the equation in the fragment fragment_equation.xml
+        expression(creatingVariables).setText("");
+        operatorUsed = true;
+        decimalUsed = false;
+        leftParenthesesUsed = 0;
+        numbersRequired = false;  // used only for after decimal used
+        operatorRequired = false;  // used only for after right parentheses ")"
+        variableUsed = false;
 
-            numbersRequired = false;  // used only for after decimal used
-            operatorRequired = false;  // used only for after right parentheses ")"
-            decimalWasUsed = 0;
-            variableUsed = false;
-        }
+
     }
 
     public void evaluate(View v) {
         // gets the editText containing the equation in the fragment fragment_equation.xml
 
-        if(numbersRequired == false && leftParenthesesUsed == 0 && operatorUsed == false)
+        if(!numbersRequired && leftParenthesesUsed == 0 && !operatorUsed)
         {
             EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
             String mathExpression = expression.getText();
@@ -1730,6 +1396,4 @@ public class MainActivity extends ActionBarActivity {
             s.moveToNext();
         }
     }
-
-
 }

@@ -21,21 +21,68 @@ import java.util.StringTokenizer;
 import java.lang.*;
 
 public class MainActivity extends ActionBarActivity {
-    public final static String MY_MSG = "com.example.erik.myfirstapp.MESSAGE";
 
+    public View.OnClickListener getOnClickDoSomething(final Button button)  {
+        return new View.OnClickListener() {
+            public void onClick(View v) {
+                EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
+                String mathExpression = expression.getText();
+                String buttonText = button.getText().toString();
+                String[] getEquation = button.getText().toString().split("\\s+");
+                String buttonName = "( " + getEquation[0] + " )";
+
+
+                mathExpression = mathExpression + buttonName;
+                operatorUsed = false;
+                numbersRequired = false;
+
+                // sets the new string to the equation editText in fragment_equation.xml
+                expression.setEquation(mathExpression);
+                // load the buttons fragment
+
+
+                showButtons(v);
+
+
+                getFragmentManager().executePendingTransactions();
+
+                TextView text =  (TextView) findViewById(R.id.textView12);
+                //String showVariablesUser =text.getText().toString();
+                Toast.makeText(getApplication(),buttonText, Toast.LENGTH_SHORT).show();
+                showVariablesUser = showVariablesUser + "\n" + buttonText;
+                text.setText(showVariablesUser);
+            }
+        };
+    }
+    public View.OnClickListener goBack(final Button button)  {
+        return new View.OnClickListener() {
+            public void onClick(View v) {
+                variableUsed = false;
+                showButtons(v);
+            }
+        };
+    }
     public boolean decimalUsed = false;
     public boolean numbersRequired = false;  // used only for after decimal used
     public boolean operatorRequired = false;  // used only for after right parentheses ")"
     public boolean operatorUsed = true;
     public boolean variableUsed = false;
     public boolean creatingVariables = false; // used to diferentiate between where buttons are directed.
+    public boolean firstEquationSelected = false;
+    public boolean secondEquationSelected = false;
+    public boolean thirdEquationSelected = false;
+    public boolean mainEquation = false;
     public int leftParenthesesUsed = 0;
     public int decimalWasUsed = 0;
 
     public String savedEquation = "";
     public String currentUserId = "";
+    public String highlightedSavedEquation = "";
+    public final static String MY_MSG = "com.example.erik.myfirstapp.MESSAGE";
+    public String showVariablesUser ="VARIABLES";
+    public String answer = "";
 
-    public boolean[] saveBooleanStates = new boolean[5]; // saves the states of boolean values when we move to create variables.
+    public boolean[] saveBooleanStates = new boolean[5]; // saves the states of boolean values when we move to create variables. //Initializer stuff
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,18 +115,16 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
     public void addNumbers(View v) {
         if (nAn()) {
             expression().append(button(v));
-            enableEqual();
+            validityCheck();
         }
         else if(!lastCharIs(')')){
             expression().append(button(v));
-            enableEqual();
+            validityCheck();
         }
     }
-
     public void addDecimal(View v) {
         if (!decimalUsed && !nAn()) {
             // gets the editText containing the equation in the fragment fragment_equation.xml
@@ -87,7 +132,6 @@ public class MainActivity extends ActionBarActivity {
             decimalUsed = true;
         }
     }
-
     public void addParentheses(View v) {
         if(nAn()) {
             if ((button(v).equals("(")))
@@ -104,21 +148,18 @@ public class MainActivity extends ActionBarActivity {
                 expression().append(" " + button(v));
                 // updates misc variables preventing user error
                 leftParenthesesUsed--;
-                enableEqual();
+                validityCheck();
             }
         }
     }
-
     public void addOperators(View v) {
         if (!nAn()) {
                 // gets the editText containing the equation in the fragment fragment_equation.xml
                 expression().append(" " + button(v) + " ");
                 variableUsed = false;
+                decimalUsed = false;
             }
         }
-
-
-
     public void addNewVariable(View v) {
         ContentValues cv = new ContentValues();
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
@@ -154,7 +195,7 @@ public class MainActivity extends ActionBarActivity {
         }
         if (!foundVarName && !foundEquation) {
             // re-enables greyed out buttons
-            reEnableGreyedOut();
+            enableButtons();
             // restores all boolean values as we are going back to the calculator
 
             decimalUsed = saveBooleanStates[0];
@@ -180,7 +221,6 @@ public class MainActivity extends ActionBarActivity {
             expression().append(savedEquation);
         }
     }
-
     public void backSpace(View v) {
             String expression = expression().toString();
 
@@ -202,21 +242,21 @@ public class MainActivity extends ActionBarActivity {
                     {
                         // reduces the total number counter of left parentheses used
                         leftParenthesesUsed--;
-                        enableEqual();
+                        validityCheck();
                         // sets the new equation to the editText in fragment_equation.xml
                         expression().setText(expression.substring(0, expression.length()-2));
 
                     } else if (lastCharIs('(')  && expression.length() == 2) // if our first character is a "(" ex "("
                     {
                         leftParenthesesUsed--;
-                        enableEqual();
+                        validityCheck();
                         expression().setText(expression.substring(0, expression.length() - 2));
 
                     } else // reading an operator ex "% * + - /"
                     {
                         expression().setText(expression.substring(0, expression.length() - 3));
                         operatorUsed = false;
-                        enableEqual();
+                        validityCheck();
                     }
                 } else if (lastCharIs(')')) // if we are reading a right parentheses
                 {
@@ -225,7 +265,7 @@ public class MainActivity extends ActionBarActivity {
                     operatorRequired = false;
 
                     // makes the equal button clickable
-                    enableEqual();
+                    validityCheck();
                     expression().setText(expression.substring(0, expression.length() - 2));
                 } else // otherwise we are reading a number
                 {
@@ -240,9 +280,6 @@ public class MainActivity extends ActionBarActivity {
                 }
             }
         }
-
-
-
     public void makeNegative(View v) {
         // gets the editText containing the equation in the fragment fragment_equation.xml
        String expression = expression().toString();
@@ -274,8 +311,6 @@ public class MainActivity extends ActionBarActivity {
 
 
     }
-
-
     public void clearExpression(View v) {
 
         // gets the editText containing the equation in the fragment fragment_equation.xml
@@ -289,7 +324,6 @@ public class MainActivity extends ActionBarActivity {
 
 
     }
-
     public void evaluate(View v) {
         // gets the editText containing the equation in the fragment fragment_equation.xml
 
@@ -364,20 +398,6 @@ public class MainActivity extends ActionBarActivity {
             }
         }
     }
-    // returns true if a string requates to a numerical value
-    public static boolean isNumeric(String str)
-    {
-        try
-        {
-            double d = Double.parseDouble(str);
-        }
-        catch(NumberFormatException nfe)
-        {
-            return false;
-        }
-        return true;
-    }
-
     public void intEval(View v) {
         // gets the editText containing the equation in the fragment fragment_equation.xml
         EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
@@ -396,7 +416,6 @@ public class MainActivity extends ActionBarActivity {
             expression.setEquation(mathExpression);
         }
     }
-
     public static int precedence(char op) {
         switch (op) {
             case '+':
@@ -414,7 +433,6 @@ public class MainActivity extends ActionBarActivity {
                 throw new IllegalArgumentException("invalid operator");
         }
     }
-
     public static String infixToPostfix(String infix) {
         StringTokenizer tokenizer = new StringTokenizer(infix);
         String postfix = "";
@@ -475,9 +493,6 @@ public class MainActivity extends ActionBarActivity {
 
         return postfix;
     }
-
-    public String answer = "";
-
     public double evalPostfix(String postfix, String original) {
         StringTokenizer tokenizer = new StringTokenizer(postfix);
         Stack valStack = new Stack();
@@ -555,35 +570,27 @@ public class MainActivity extends ActionBarActivity {
 
         return rslt;
     }
-
     public void showEquationSteps() {
         equationSteps steps = new equationSteps();
 
         getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
         getFragmentManager().beginTransaction().add(R.id.button_Frame, steps).commit();
     }
-
     public void showButtons(View v) {
         ButtonsFragment showMyButtons = new ButtonsFragment();
 
         getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
         getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
     }
-
     public void showEquationSteps(View v) {  // used for showing equation steps button
         equationSteps expression = (equationSteps) getFragmentManager().findFragmentById(R.id.button_Frame);
         expression.setEquationSteps(answer);
     }
-
-    public void showVariableCreatorFragment(View v)
-    {
+    public void showVariableCreatorFragment(View v) {
         getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.equation_Frame)).commit();
         getFragmentManager().beginTransaction().add(R.id.equation_Frame, new createVariables()).commit();
     }
-
-
-    public void createVariablesFragment(View v)
-    {
+    public void createVariablesFragment(View v){
         // greys out apropriate buttons
         Button greyCreateNewVariableButton = (Button)findViewById(R.id.button29);
         greyCreateNewVariableButton.setEnabled(false);
@@ -618,9 +625,7 @@ public class MainActivity extends ActionBarActivity {
 
 
     }
-
-    public void addVariables(View v)
-    {
+    public void addVariables(View v){
         if(variableUsed == false && operatorUsed == true) {
             // pull the variables out of the databse & display them on the page as buttons enclosed in parentheses
             // example: the equation 5/(7+2) has a variable name foo,
@@ -708,52 +713,7 @@ public class MainActivity extends ActionBarActivity {
 
         }
     }
-    String showVariablesUser ="VARIABLES";
-    //Overrides the onclickListener for the buttons being created above.
-    View.OnClickListener getOnClickDoSomething(final Button button)  {
-        return new View.OnClickListener() {
-            public void onClick(View v) {
-                EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
-                String mathExpression = expression.getText();
-                String buttonText = button.getText().toString();
-                String[] getEquation = button.getText().toString().split("\\s+");
-                String buttonName = "( " + getEquation[0] + " )";
-
-
-                mathExpression = mathExpression + buttonName;
-                operatorUsed = false;
-                numbersRequired = false;
-
-                // sets the new string to the equation editText in fragment_equation.xml
-                expression.setEquation(mathExpression);
-                // load the buttons fragment
-
-
-                showButtons(v);
-
-
-                getFragmentManager().executePendingTransactions();
-
-                TextView text =  (TextView) findViewById(R.id.textView12);
-                //String showVariablesUser =text.getText().toString();
-                Toast.makeText(getApplication(),buttonText, Toast.LENGTH_SHORT).show();
-                showVariablesUser = showVariablesUser + "\n" + buttonText;
-                text.setText(showVariablesUser);
-            }
-        };
-    }
-
-    //Overrides the onclickListener for the buttons being created above.
-    View.OnClickListener goBack(final Button button)  {
-        return new View.OnClickListener() {
-            public void onClick(View v) {
-                variableUsed = false;
-                showButtons(v);
-            }
-        };
-    }
-
-    public int evalPostfixInt(String postfix, String original) {
+    public int  evalPostfixInt(String postfix, String original) {
         StringTokenizer tokenizer = new StringTokenizer(postfix);
         Stack valStack = new Stack();
         Intent i = new Intent(this, maths.class);
@@ -815,17 +775,7 @@ public class MainActivity extends ActionBarActivity {
         return rslt;
 
     }
-
-    // checks to see which equation has been selected
-    public boolean firstEquationSelected = false;
-    public boolean secondEquationSelected = false;
-    public boolean thirdEquationSelected = false;
-    public boolean mainEquation = false;
-
-    // strings containing saved data from highlighted sections
-    public String highlightedSavedEquation = "";
-    public void highlight(View v)
-    {
+    public void highlight(View v){
 
         if(firstEquationSelected == false && secondEquationSelected == false && thirdEquationSelected==false)
         {
@@ -941,8 +891,7 @@ public class MainActivity extends ActionBarActivity {
             }
         }
     }
-    public void saveEquations(View v)
-    {
+    public void saveEquations(View v){
         //Toast.makeText(getApplication(), "Hit", Toast.LENGTH_SHORT).show();
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase sdb = n.getWritableDatabase();
@@ -1030,10 +979,7 @@ public class MainActivity extends ActionBarActivity {
       //  Toast.makeText(getApplication(), "While Loop terminated", Toast.LENGTH_SHORT).show();
         //displayNewStuff(v);
     }
-
-
-    public void clearVariables(View v)
-    {
+    public void clearVariables(View v){
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase sdb = n.getWritableDatabase();
         sdb.delete(NumberContract.VariableEntry.VARIABLE_TABLE_NAME,null,null);
@@ -1113,8 +1059,7 @@ public class MainActivity extends ActionBarActivity {
             Toast.makeText(getApplication(), "Passwords do not match", Toast.LENGTH_SHORT).show();
         }
     }
-    public void createDefaultSavedEquations(int i)
-    {
+    public void createDefaultSavedEquations(int i){
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase sdb = n.getWritableDatabase();
         NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
@@ -1144,14 +1089,7 @@ public class MainActivity extends ActionBarActivity {
                 sdb.insert(NumberContract.EquationEntry.EQUATION_TABLE_NAME, "null", cv);
                 sdb.close();
             }
-
-
-
-
-
-
-    public void login(View v)
-    {
+    public void login(View v){
         NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase db = ndbh.getReadableDatabase();
 
@@ -1216,17 +1154,13 @@ public class MainActivity extends ActionBarActivity {
         }
         //((TextView)findViewById(R.id.dbValues)).setText(display);
     }
-
-    public void logout(View v)
-    {
+    public void logout(View v){
         loginFragment showMyButtons = new loginFragment();
 
         getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
         getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
     }
-
-    public void loadFavoriteEquations()
-    {
+    public void loadFavoriteEquations(){
         //Toast.makeText(getApplication(), "Hit", Toast.LENGTH_SHORT).show();
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase sdb = n.getWritableDatabase();
@@ -1308,8 +1242,21 @@ public class MainActivity extends ActionBarActivity {
             s.moveToNext();
         }
     }
-    public boolean nAn(char c)
-    {
+
+    //Helper Methods
+
+    public boolean isNumeric(String str){
+        try
+        {
+            double d = Double.parseDouble(str);
+        }
+        catch(NumberFormatException nfe)
+        {
+            return false;
+        }
+        return true;
+    }
+    public boolean nAn(char c){
         try{
             Double d = ((double) c);
             return false;
@@ -1331,8 +1278,7 @@ public class MainActivity extends ActionBarActivity {
                 s.getColumnIndexOrThrow(
                         NumberContract.VariableEntry.VARIABLE_NAME));
     }
-    public String currentUser(Cursor s)
-    {
+    public String currentUser(Cursor s){
         return s.getString(
                 s.getColumnIndexOrThrow(
                         NumberContract.VariableEntry.VARIABLE_CURRENT_USER));
@@ -1348,24 +1294,28 @@ public class MainActivity extends ActionBarActivity {
     public char nthLast(int n){
         return expression().toString().charAt(expression().length() - n);
     }
-    public boolean lastCharIs(char c)
-    {
+    public boolean lastCharIs(char c){
         return expression().toString().charAt(expression().length() - 1) == c;
     }
-    public void enableEqual()
+    public void validityCheck()
     {
         findViewById(R.id.button7).setEnabled(leftParenthesesUsed == 0);
     }
-    public EditText varName()
-    {
+    public EditText varName(){
         return (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText7);
     }
-    public void reEnableGreyedOut(){
-
+    public void enableButtons(){
         findViewById(R.id.button29).setEnabled(true);
         findViewById(R.id.button7).setEnabled(true);
         findViewById(R.id.useSaved).setEnabled(true);
         findViewById(R.id.button28).setEnabled(true);
+    }
+    public void disableButtons(){
+        findViewById(R.id.button29).setEnabled(false);
+        findViewById(R.id.button7).setEnabled(false);
+        findViewById(R.id.useSaved).setEnabled(false);
+        findViewById(R.id.button28).setEnabled(false);
+
     }
     public Cursor cursor(){
 

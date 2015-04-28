@@ -116,20 +116,27 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
     public void addNumbers(View v) {
-        if (nAn()) {
+        if(expression().getText().length() == 0) {
             expression().append(button(v));
+            operatorUsed = false;
             validityCheck();
         }
         else if(!lastCharIs(')')){
             expression().append(button(v));
+            operatorUsed = false;
             validityCheck();
         }
+        else {
+
+        }
+
     }
     public void addDecimal(View v) {
-        if (!decimalUsed && !nAn()) {
+        if (!decimalUsed) {
             // gets the editText containing the equation in the fragment fragment_equation.xml
             expression().append(button(v));
             decimalUsed = true;
+            operatorUsed = false;
         }
     }
     public void addParentheses(View v) {
@@ -149,6 +156,7 @@ public class MainActivity extends ActionBarActivity {
                 // updates misc variables preventing user error
                 leftParenthesesUsed--;
                 validityCheck();
+                operatorUsed = true;
             }
         }
     }
@@ -157,6 +165,7 @@ public class MainActivity extends ActionBarActivity {
                 // gets the editText containing the equation in the fragment fragment_equation.xml
                 expression().append(" " + button(v) + " ");
                 variableUsed = false;
+                operatorUsed = true;
                 decimalUsed = false;
             }
         }
@@ -164,21 +173,19 @@ public class MainActivity extends ActionBarActivity {
         ContentValues cv = new ContentValues();
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase sdb = n.getWritableDatabase();
-        Cursor s = cursor();
+        Cursor s = varCursor();
         s.moveToFirst();
-
         boolean foundVarName = false, foundEquation = false;
-
         while (!s.isAfterLast()) {
 
             if(currentUser(s).equalsIgnoreCase(currentUserId))
             {
-                if (display(s).equalsIgnoreCase(varName().toString())) // does this variable name exist?
+                if (display(s).equalsIgnoreCase(varName())) // does this variable name exist?
                 {
                     foundVarName = true;
                     break;
                 }
-                if (dbEquation(s).equalsIgnoreCase(expression().toString())) // does equation already exist?
+                if (dbEquation(s).equalsIgnoreCase(equation())) // does equation already exist?
                 {
                     foundEquation = true;
                     break;
@@ -206,9 +213,9 @@ public class MainActivity extends ActionBarActivity {
 
             String defaultSavedEquations = "SavedEquationSlot";
             //creating the database
-            cv.put(NumberContract.VariableEntry.VARIABLE_NAME, varName().toString());
+            cv.put(NumberContract.VariableEntry.VARIABLE_NAME, varName());
             // could also be written cv.put("username", id);
-            cv.put(NumberContract.VariableEntry.VARIABLE_EQUATION, expression().toString());
+            cv.put(NumberContract.VariableEntry.VARIABLE_EQUATION, equation());
             cv.put(NumberContract.VariableEntry.VARIABLE_CURRENT_USER, currentUserId);
             //INSERT INTO TABLE_NAME VALUES (whatever the values in each row are);
             sdb.insert(NumberContract.VariableEntry.VARIABLE_TABLE_NAME, "null", cv);
@@ -218,11 +225,11 @@ public class MainActivity extends ActionBarActivity {
             creatingVariables = false;
             // waits for the commits to execute BEFORE trying to do stuff to the newly loaded fragments text.
             getFragmentManager().executePendingTransactions();
-            expression().append(savedEquation);
+            expression().setText(savedEquation);
         }
     }
     public void backSpace(View v) {
-            String expression = expression().toString();
+            String expression = expression().getText().toString();
 
             if (expression.length() > 0) // if we actually have an expression
             {
@@ -282,7 +289,7 @@ public class MainActivity extends ActionBarActivity {
         }
     public void makeNegative(View v) {
         // gets the editText containing the equation in the fragment fragment_equation.xml
-       String expression = expression().toString();
+       String expression = expression().getText().toString();
         if (expression.length() > 0) {
             String[] elements = expression.split("\\s+"); // delimit by whitespace throw into an array
 
@@ -334,8 +341,6 @@ public class MainActivity extends ActionBarActivity {
 
             String[] getEquation = mathExpression.split("\\s+");// tokenize mathExpression to delimit variables
             mathExpression = ""; // reset mathExpression to be re-created during for loop later
-            //String newStuff = "";
-            // set up database stuff
             NumberDBHelper n = new NumberDBHelper(getApplicationContext());
             SQLiteDatabase sdb = n.getWritableDatabase();
             NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
@@ -388,7 +393,7 @@ public class MainActivity extends ActionBarActivity {
 
             if (mathExpression.length() != 0) {
                 String value = infixToPostfix(mathExpression);
-                value = evalPostfix(value, mathExpression) + " ";
+                value = evalPostfix(value, mathExpression) + "";
                 decimalUsed = true;
                 operatorUsed = false;
                 leftParenthesesUsed = 0;
@@ -592,14 +597,7 @@ public class MainActivity extends ActionBarActivity {
     }
     public void createVariablesFragment(View v){
         // greys out apropriate buttons
-        Button greyCreateNewVariableButton = (Button)findViewById(R.id.button29);
-        greyCreateNewVariableButton.setEnabled(false);
-        Button greyEqualsButton = (Button)findViewById(R.id.button7);
-        greyEqualsButton.setEnabled(false);
-        Button greyUseVariablesButton = (Button)findViewById(R.id.useSaved);
-        greyUseVariablesButton.setEnabled(false);
-        Button greySavedEquations = (Button)findViewById(R.id.button28);
-        greySavedEquations.setEnabled(false);
+        disableButtons();
 
         // creats a Equationfragment
         EquationFragment expression = (EquationFragment) getFragmentManager().findFragmentById(R.id.equation_Frame);
@@ -618,8 +616,6 @@ public class MainActivity extends ActionBarActivity {
         variableUsed = false;
         creatingVariables = true;
         savedEquation = expression.getText();
-
-        // instantiates said Equationfragment created earlier
         showVariableCreatorFragment(v);
 
 
@@ -637,9 +633,9 @@ public class MainActivity extends ActionBarActivity {
             showVariables showMyButtons = new showVariables();
 
             TextView text =  (TextView) findViewById(R.id.textView12);
-            String showVariablesUser =text.getText().toString();
+            String showVariablesUser = text.getText().toString();
             //Toast.makeText(getApplication(),showVariablesUser, Toast.LENGTH_SHORT).show();
-            showVariablesUser =text.getText().toString();
+            showVariablesUser = text.getText().toString();
             getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
             getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
             // waits for the commits to execute BEFORE trying to do stuff to the newly loaded fragments text.
@@ -1243,7 +1239,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    //Helper Methods
+    //Helper Methods/////////////////////////////////////////////////////////
 
     public boolean isNumeric(String str){
         try
@@ -1268,7 +1264,7 @@ public class MainActivity extends ActionBarActivity {
     }
     public boolean nAn()
     {
-       return nAn(expression().toString().charAt(expression().length() -1));
+       return nAn(expression().getText().toString().charAt(expression().length() -1));
     }
     public String button(View v){
         return ((Button) v.findViewById(v.getId())).getText().toString();
@@ -1292,18 +1288,22 @@ public class MainActivity extends ActionBarActivity {
         return (creatingVariables) ? (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8) : (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.equation);
     }
     public char nthLast(int n){
-        return expression().toString().charAt(expression().length() - n);
+        return expression().getText().toString().charAt(expression().length() - n);
     }
     public boolean lastCharIs(char c){
-        return expression().toString().charAt(expression().length() - 1) == c;
+        return expression().getText().toString().charAt(expression().length() - 1) == c;
     }
     public void validityCheck()
     {
-        findViewById(R.id.button7).setEnabled(leftParenthesesUsed == 0);
+        findViewById(R.id.button7).setEnabled(!nAn());
     }
-    public EditText varName(){
-        return (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText7);
+    public String varName(){
+        return ((EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText7)).getText().toString();
     }
+    public String equation(){
+       return ((EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8)).getText().toString();
+    }
+
     public void enableButtons(){
         findViewById(R.id.button29).setEnabled(true);
         findViewById(R.id.button7).setEnabled(true);
@@ -1317,7 +1317,7 @@ public class MainActivity extends ActionBarActivity {
         findViewById(R.id.button28).setEnabled(false);
 
     }
-    public Cursor cursor(){
+    public Cursor varCursor(){
 
         NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
         SQLiteDatabase db = ndbh.getReadableDatabase();

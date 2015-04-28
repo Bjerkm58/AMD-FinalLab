@@ -10,7 +10,7 @@ public final class NumberContract {
     public NumberContract(){}
 
     /* By implementing the BaseColumns interface, your inner class can inherit a primary key field
-    called _ID that some Android classes such as cursor adaptors will expect it to have. It's not
+    called _ID that some Android classes such as varCursor adaptors will expect it to have. It's not
     required, but this can help your database work harmoniously with the Android framework.
      This defines contents of 1 table. Makes it easy to change tables/columns
      without having to find where it is everywhere in your code.

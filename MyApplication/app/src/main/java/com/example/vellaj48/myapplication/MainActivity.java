@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +18,27 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.lang.*;
@@ -84,6 +107,8 @@ public class MainActivity extends ActionBarActivity {
 
     public boolean[] saveBooleanStates = new boolean[5]; // saves the states of boolean values when we move to create variables. //Initializer stuff
 
+    public HashMap<String, String> userDB = new HashMap<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +119,7 @@ public class MainActivity extends ActionBarActivity {
             .add(R.id.equation_Frame, new EquationFragment())
             .add(R.id.favorite_equation_frame, new favoriteEquations())
         .commit();
+        pulluserDB();
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -180,7 +206,7 @@ public class MainActivity extends ActionBarActivity {
 
             if(currentUser(s).equalsIgnoreCase(currentUserId))
             {
-                if (display(s).equalsIgnoreCase(varName())) // does this variable name exist?
+                if (dbVarName(s).equalsIgnoreCase(varName())) // does this variable name exist?
                 {
                     foundVarName = true;
                     break;
@@ -623,7 +649,7 @@ public class MainActivity extends ActionBarActivity {
     }
     public void addVariables(View v){
         if(variableUsed == false && operatorUsed == true) {
-            // pull the variables out of the databse & display them on the page as buttons enclosed in parentheses
+            // pull the variables out of the databse & dbVarName them on the page as buttons enclosed in parentheses
             // example: the equation 5/(7+2) has a variable name foo,
             // button looks like:  [ foo = (5/(7+2)) ] where the [] brackets are the button itself.
             // this way you can simpl
@@ -981,69 +1007,19 @@ public class MainActivity extends ActionBarActivity {
         sdb.delete(NumberContract.VariableEntry.VARIABLE_TABLE_NAME,null,null);
     }
     public void saveData(View v){
-        NumberDBHelper n = new NumberDBHelper(getApplicationContext());
-        SQLiteDatabase s = n.getWritableDatabase();
-
-        ContentValues cv = new ContentValues();
-        String id = ((EditText)findViewById(R.id.editText5)).getText().toString(); // password
-        String pas = ((EditText)findViewById(R.id.editText6)).getText().toString(); // username
-        String confirmPass = ((EditText)findViewById(R.id.secondPass)).getText().toString();  // backup password
+        String id = ((EditText)loginFrame().findViewById(R.id.editText5)).getText().toString(); // password
+        String pas = ((EditText)loginFrame().findViewById(R.id.editText6)).getText().toString(); // username
+        String confirmPass = ((EditText)loginFrame().findViewById(R.id.secondPass)).getText().toString();  // backup password
         // Toast.makeText(getApplication(), "pas " + pas + " id " + id + " confirmpas " + confirmPass, Toast.LENGTH_SHORT).show();
         if(pas.equalsIgnoreCase(confirmPass)) // check to see if passwords match
         {
-            // the following checks to see if a user is already in the database,
-            // if they are it sets a boolean value to true and submits an error toast message
-            // if the user does not exist, create the user
-            boolean userExists = false;
-
-            NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
-            SQLiteDatabase db = ndbh.getReadableDatabase();
-
-            String[] projection = {
-                    NumberContract.NumberEntry._ID,
-                    NumberContract.NumberEntry.COLUMN_NAME_ID,
-                    NumberContract.NumberEntry.COLUMN_NAME_VALUE,
-            };
-
-            //SELECT * FROM numbers
-            Cursor c = db.query(
-                    NumberContract.NumberEntry.USER_TABLE_NAME,
-                    projection,
-                    null,  //String
-                    null,  //String[]
-                    null,
-                    null,
-                    null,
-                    null
-            );
-
-            int totalUserCount = 1;
-            c.moveToFirst();
-            String display = "";
-            while (!c.isAfterLast()) {
-                display = c.getString(
-                        c.getColumnIndexOrThrow(
-                                NumberContract.NumberEntry.COLUMN_NAME_ID)); // gets user id's
-                if(display.equalsIgnoreCase(id))
-                {
-                    userExists = true;
-                }
-                totalUserCount++;
-                c.moveToNext();
-            }
-            if(!userExists) // if the user does not exist. add them to the database
+            if(!userDB.containsKey(id)) // if the user does not exist. add them to the database
             {
-                String defaultSavedEquations = "SavedEquationSlot";
-                //creating the database
-                cv.put(NumberContract.NumberEntry.COLUMN_NAME_ID, id);
-                // could also be written cv.put("username", id);
-                cv.put(NumberContract.NumberEntry.COLUMN_NAME_VALUE, pas);
-
                 //INSERT INTO TABLE_NAME VALUES (whatever the values in each row are);
-                s.insert(NumberContract.NumberEntry.USER_TABLE_NAME, "null", cv);
-                s.close();
+                pushuserintoDb(v);
+
                 Toast.makeText(getApplication(), "SUCCESS! Your account was created", Toast.LENGTH_SHORT).show();
-                createDefaultSavedEquations(totalUserCount);
+                //createDefaultSavedEquations(totalUserCount);
             }
             else
             {
@@ -1085,70 +1061,24 @@ public class MainActivity extends ActionBarActivity {
                 sdb.insert(NumberContract.EquationEntry.EQUATION_TABLE_NAME, "null", cv);
                 sdb.close();
             }
-    public void login(View v){
-        NumberDBHelper ndbh = new NumberDBHelper(getApplicationContext());
-        SQLiteDatabase db = ndbh.getReadableDatabase();
+    public void login(View v)throws UnsupportedEncodingException{
+        String password = ((EditText)loginFrame().findViewById(R.id.editText4)).getText().toString();
+        String username = ((EditText) loginFrame().findViewById(R.id.editText)).getText().toString(); // username
+        if(userDB.containsKey(username)){
+            if(userDB.get(username).equals(password)){
+                showButtons(v);
+                // wait for the new fragment to load.
+                getFragmentManager().executePendingTransactions();
 
-        String pas = ((EditText)findViewById(R.id.editText4)).getText().toString(); // password
-        String id = ((EditText)findViewById(R.id.editText)).getText().toString(); // username
-
-        String[] projection = {
-                NumberContract.NumberEntry._ID,
-                NumberContract.NumberEntry.COLUMN_NAME_ID,
-                NumberContract.NumberEntry.COLUMN_NAME_VALUE,
-        };
-
-        //SELECT * FROM numbers
-        Cursor s = db.query(
-                NumberContract.NumberEntry.USER_TABLE_NAME,
-                projection,
-                null,  //String
-                null,  //String[]
-                null,
-                null,
-                null,
-                null
-        );
-
-        s.moveToFirst();
-        String display = "";
-        boolean foundUser = false;
-        while(!s.isAfterLast()){
-            display = s.getString(
-                    s.getColumnIndexOrThrow(
-                            NumberContract.NumberEntry.COLUMN_NAME_ID));
-            if(display.equalsIgnoreCase(id)) // check to see if usernames are in database
-            {
-                foundUser = true;
-                display = s.getString(
-                        s.getColumnIndexOrThrow(
-                                NumberContract.NumberEntry.COLUMN_NAME_VALUE));
-                if(display.equalsIgnoreCase(pas)) // if they are, does their password match?
-                {
-                    currentUserId = s.getString(
-                            s.getColumnIndexOrThrow(
-                                    NumberContract.NumberEntry._ID));
-                    // Toast.makeText(getApplication(), currentUserId, Toast.LENGTH_SHORT).show();
-                    showButtons(v);
-
-                    // wait for the new fragment to load.
-                    getFragmentManager().executePendingTransactions();
-
-                    loadFavoriteEquations();
-                }
-                else
-                {
-                    Toast.makeText(getApplication(), "Invalid Password", Toast.LENGTH_SHORT).show();
-                }
+                loadFavoriteEquations();
             }
-            //else do nothing move to the new users.
-            s.moveToNext();
+            else{
+                Toast.makeText(getApplication(), "Invalid Password", Toast.LENGTH_SHORT).show();
+            }
         }
-        if(foundUser == false)
-        {
+        else{
             Toast.makeText(getApplication(), "Invalid Username", Toast.LENGTH_SHORT).show();
         }
-        //((TextView)findViewById(R.id.dbValues)).setText(display);
     }
     public void logout(View v){
         loginFragment showMyButtons = new loginFragment();
@@ -1239,37 +1169,18 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    //Helper Methods/////////////////////////////////////////////////////////
+    ////Object references/////////////////////////////////////////////////////////
 
-    public boolean isNumeric(String str){
-        try
-        {
-            double d = Double.parseDouble(str);
-        }
-        catch(NumberFormatException nfe)
-        {
-            return false;
-        }
-        return true;
+    public EditText expression() {
+        return (creatingVariables) ? (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8) : (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.equation);
     }
-    public boolean nAn(char c){
-        try{
-            Double d = ((double) c);
-            return false;
-        }
-        catch(NumberFormatException nfe)
-        {
-            return true;
-        }
-    }
-    public boolean nAn()
-    {
-       return nAn(expression().getText().toString().charAt(expression().length() -1));
+    public View loginFrame(){
+       return ((getFragmentManager().findFragmentById(R.id.button_Frame)).getView());
     }
     public String button(View v){
         return ((Button) v.findViewById(v.getId())).getText().toString();
     }
-    public String display(Cursor s){
+    public String dbVarName(Cursor s){
         return s.getString(
                 s.getColumnIndexOrThrow(
                         NumberContract.VariableEntry.VARIABLE_NAME));
@@ -1284,38 +1195,11 @@ public class MainActivity extends ActionBarActivity {
                 s.getColumnIndexOrThrow(
                         NumberContract.VariableEntry.VARIABLE_EQUATION));
     }
-    public EditText expression() {
-        return (creatingVariables) ? (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8) : (EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.equation);
-    }
-    public char nthLast(int n){
-        return expression().getText().toString().charAt(expression().length() - n);
-    }
-    public boolean lastCharIs(char c){
-        return expression().getText().toString().charAt(expression().length() - 1) == c;
-    }
-    public void validityCheck()
-    {
-        findViewById(R.id.button7).setEnabled(!nAn());
-    }
     public String varName(){
         return ((EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText7)).getText().toString();
     }
     public String equation(){
-       return ((EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8)).getText().toString();
-    }
-
-    public void enableButtons(){
-        findViewById(R.id.button29).setEnabled(true);
-        findViewById(R.id.button7).setEnabled(true);
-        findViewById(R.id.useSaved).setEnabled(true);
-        findViewById(R.id.button28).setEnabled(true);
-    }
-    public void disableButtons(){
-        findViewById(R.id.button29).setEnabled(false);
-        findViewById(R.id.button7).setEnabled(false);
-        findViewById(R.id.useSaved).setEnabled(false);
-        findViewById(R.id.button28).setEnabled(false);
-
+        return ((EditText)(getFragmentManager().findFragmentById(R.id.equation_Frame)).getView().findViewById(R.id.editText8)).getText().toString();
     }
     public Cursor varCursor(){
 
@@ -1339,4 +1223,164 @@ public class MainActivity extends ActionBarActivity {
                 null
         );
     }
+
+    ////Scripts/////////////////////////////////////////////////////////
+
+    public void enableButtons(){
+        findViewById(R.id.button29).setEnabled(true);
+        findViewById(R.id.button7).setEnabled(true);
+        findViewById(R.id.useSaved).setEnabled(true);
+        findViewById(R.id.button28).setEnabled(true);
+    }
+    public void disableButtons(){
+        findViewById(R.id.button29).setEnabled(false);
+        findViewById(R.id.button7).setEnabled(false);
+        findViewById(R.id.useSaved).setEnabled(false);
+        findViewById(R.id.button28).setEnabled(false);
+
+    }
+    public void validityCheck(){
+       findViewById(R.id.button7).setEnabled(!nAn());
+    }
+
+    //////Helper Methods/////////////////////////////////////////////////////////
+
+    public boolean isNumeric(String str){
+        try
+        {
+            double d = Double.parseDouble(str);
+        }
+        catch(NumberFormatException nfe)
+        {
+            return false;
+        }
+        return true;
+    }
+    public boolean nAn(char c){
+        try{
+            Double d = ((double) c);
+            return false;
+        }
+        catch(NumberFormatException nfe)
+        {
+            return true;
+        }
+    }
+    public boolean nAn(){
+        return nAn(expression().getText().toString().charAt(expression().length() -1));
+    }
+    public boolean lastCharIs(char c){
+        return expression().getText().toString().charAt(expression().length() - 1) == c;
+    }
+
+    /////ExtDBCode////////////////////////////////////////////////////////////////
+    private class InsertUserIntoDB extends AsyncTask<Long, Integer, Void> {
+        @Override
+        protected Void doInBackground(Long... v) {
+            try {
+                String username = ((EditText)findViewById(R.id.editText5)).getText().toString(); // password
+               // byte[] shaPass  = DigestUtils.sha1();
+                String password = ((EditText)findViewById(R.id.editText6)).getText().toString();
+                userDB.put(username, password);
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost("http://softeng.cs.uwosh.edu/students/bjerkm58/insert.php");
+                // Add your data via a POST command. insert.php accesses variable by using $_POST['variable']
+                // See attached php page to see the whole example.
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+                nameValuePairs.add(new BasicNameValuePair("username", username));
+                nameValuePairs.add(new BasicNameValuePair("password", password));
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                // Execute HTTP Post Request
+                HttpResponse response = httpclient.execute(httppost);
+                // There should probably be some kind of check to make sure the data was inserted
+                // correctly. The webpage could echo out a "success" or some kind of failure code
+                // if something went wrong. However, to keep this example short, I am just ignoring
+                // the output and assuming inserting was a success.
+            } catch (ClientProtocolException e) {
+                Log.i("main", "bad thing happened");
+            } catch (IOException e) {
+                Log.i("main", "bad thing happened");
+            }
+            //If your method returns nothing, you can state the return type is Void.
+            //However, Void is an Object, it is different from void. Therefore, you
+            //must return something. This is why I return null.
+            return null;
+        }
+
+        // This is called when doInBackground() is finished
+        @Override
+        protected void onPostExecute(Void result) {
+
+        }
+    }
+    private class GetUserDB extends AsyncTask<Long, Integer, JSONArray> {
+        @Override
+        protected JSONArray doInBackground(Long... v) {
+            //what gets returned at the end
+            JSONArray jsonArray = null;
+
+            try {
+                //Code to connect to a web server and retrieve data from the database.
+                //The actual select query is in the php file. You can pass data to the
+                //select.php page using GET or POST commands and then use that data
+                //to modify your query. For instance, instead of doing SELECT * FROM temp,
+                //if a value were passed in, you could modify your query to be
+                //SELECT * FROM temp WHERE var='a'
+                //or something like that. See code above for how to pass data to the php page.
+                //See attached php code to see query.
+                HttpEntity entity = null;
+                String url = "http://softeng.cs.uwosh.edu/students/bjerkm58/selectUsers.php";
+                DefaultHttpClient dhc = new DefaultHttpClient();
+                HttpGet hg = new HttpGet(url);
+                HttpResponse hr = dhc.execute(hg);
+                entity = hr.getEntity();
+                String response = EntityUtils.toString(entity);
+                response = response.substring(3);
+                jsonArray = new JSONArray(response);
+            } catch (ClientProtocolException e) {
+                Log.i("main", "bad thing happened1");
+            } catch (IOException e) {
+                Log.i("main", "bad thing happened2");
+            } catch (JSONException e){
+                Log.i("main3", "bad thing 3");
+            }
+
+            return jsonArray;
+        }
+
+        // This is called when doInBackground() is finished
+        @Override
+        protected void onPostExecute(JSONArray result) {
+            //not necessary to call a method in the activity but just
+            //an example of how to do it.
+            userDB = getUserDB(result);
+        }
+    }
+
+    public void pushuserintoDb(View v){
+        new InsertUserIntoDB().execute();
+    }
+    public void pulluserDB() {
+        new GetUserDB().execute();
+    }
+
+    public HashMap<String, String> getUserDB(JSONArray arr){
+        HashMap<String, String> result = new HashMap<>();
+        if(arr.length() != 0) {
+            for (int i = 0; i < arr.length(); i++) {
+                try {
+                    JSONObject obj = arr.getJSONObject(i);
+                    result.put(obj.getString("username"), obj.getString("password"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
+    }
+
+
+
+
 }

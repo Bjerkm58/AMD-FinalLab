@@ -1,0 +1,248 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.vellaj48.myapplication.guest_buttons">
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+"
+        android:id="@+id/guestPlus"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="83dp"
+        android:layout_marginStart="83dp"
+        android:onClick="addOperators" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="-"
+        android:id="@+id/guestSub"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/guestPlus"
+        android:layout_toEndOf="@+id/guestPlus"
+        android:onClick="addOperators" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="*"
+        android:id="@+id/guestMult"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/guestSub"
+        android:layout_toEndOf="@+id/guestSub"
+        android:onClick="addOperators" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="/"
+        android:id="@+id/guestDiv"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/guestMult"
+        android:layout_toEndOf="@+id/guestMult"
+        android:onClick="addOperators" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="%"
+        android:id="@+id/guestMod"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/guestDiv"
+        android:layout_toEndOf="@+id/guestDiv"
+        android:onClick="addOperators" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="9"
+        android:id="@+id/guestNine"
+        android:layout_below="@+id/guestPlus"
+        android:layout_alignLeft="@+id/guestPlus"
+        android:layout_alignStart="@+id/guestPlus"
+        android:layout_marginTop="56dp"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="8"
+        android:id="@+id/guestEight"
+        android:layout_alignTop="@+id/guestNine"
+        android:layout_toLeftOf="@+id/guestDiv"
+        android:layout_toStartOf="@+id/guestDiv"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="7"
+        android:id="@+id/guestSeven"
+        android:layout_alignTop="@+id/guestEight"
+        android:layout_alignRight="@+id/guestMod"
+        android:layout_alignEnd="@+id/guestMod"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="6"
+        android:id="@+id/guestSix"
+        android:layout_below="@+id/guestNine"
+        android:layout_alignLeft="@+id/guestNine"
+        android:layout_alignStart="@+id/guestNine"
+        android:layout_marginTop="54dp"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="5"
+        android:id="@+id/guestFive"
+        android:layout_alignTop="@+id/guestSix"
+        android:layout_alignLeft="@+id/guestEight"
+        android:layout_alignStart="@+id/guestEight"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="4"
+        android:id="@+id/guestFour"
+        android:layout_alignTop="@+id/guestFive"
+        android:layout_alignLeft="@+id/guestSeven"
+        android:layout_alignStart="@+id/guestSeven"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="3"
+        android:id="@+id/guestThree"
+        android:layout_below="@+id/guestSix"
+        android:layout_alignLeft="@+id/guestSix"
+        android:layout_alignStart="@+id/guestSix"
+        android:layout_marginTop="66dp"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2"
+        android:id="@+id/guestTwo"
+        android:layout_alignTop="@+id/guestThree"
+        android:layout_toRightOf="@+id/guestSub"
+        android:layout_toEndOf="@+id/guestSub"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:id="@+id/guestOne"
+        android:layout_alignTop="@+id/guestTwo"
+        android:layout_toRightOf="@+id/guestDiv"
+        android:layout_toEndOf="@+id/guestDiv"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:id="@+id/guestZero"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/guestSub"
+        android:layout_toEndOf="@+id/guestSub"
+        android:onClick="addNumbers" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="backspace"
+        android:id="@+id/guestBackspace"
+        android:layout_alignTop="@+id/guestZero"
+        android:layout_alignLeft="@+id/guestThree"
+        android:layout_alignStart="@+id/guestThree"
+        android:onClick="backSpace" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="."
+        android:id="@+id/guestDecimal"
+        android:layout_alignTop="@+id/guestZero"
+        android:layout_toRightOf="@+id/guestDiv"
+        android:layout_toEndOf="@+id/guestDiv"
+        android:onClick="addDecimal" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="="
+        android:id="@+id/guestEquals"
+        android:layout_below="@+id/guestZero"
+        android:layout_alignLeft="@+id/guestBackspace"
+        android:layout_alignStart="@+id/guestBackspace"
+        android:layout_marginTop="54dp"
+        android:layout_alignRight="@+id/guestDecimal"
+        android:layout_alignEnd="@+id/guestDecimal"
+        android:onClick="evaluate" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="clear"
+        android:id="@+id/guestClear"
+        android:layout_below="@+id/guestEquals"
+        android:layout_toRightOf="@+id/guestEquals"
+        android:layout_toEndOf="@+id/guestEquals"
+        android:layout_marginTop="51dp"
+        android:onClick="clearExpression" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Negate"
+        android:id="@+id/guestNegate"
+        android:layout_alignTop="@+id/guestClear"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:onClick="makeNegative" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log Out"
+        android:id="@+id/guestLogOut"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/guestEquals"
+        android:layout_toEndOf="@+id/guestEquals"
+        android:onClick="guestLogout" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="("
+        android:id="@+id/guestLParen"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:onClick="addParentheses" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=")"
+        android:id="@+id/guestRParen"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="addParentheses" />
+
+</RelativeLayout>

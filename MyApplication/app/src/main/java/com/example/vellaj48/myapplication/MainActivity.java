@@ -613,6 +613,16 @@ public class MainActivity extends ActionBarActivity {
         getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
         getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
     }
+    public void showGuestButtons(View v)   {
+        guest_buttons showMyButtons = new guest_buttons();
+
+        // remove the saved equations fragment as it is a registered users option
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.favorite_equation_frame)).commit();
+
+        //do the rest of the stuff normalls
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
+    }
     public void showEquationSteps(View v) {  // used for showing equation steps button
         equationSteps expression = (equationSteps) getFragmentManager().findFragmentById(R.id.button_Frame);
         expression.setEquationSteps(answer);
@@ -1086,6 +1096,18 @@ public class MainActivity extends ActionBarActivity {
         getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
         getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
     }
+    public void guestLogout(View v){
+        loginFragment showMyButtons = new loginFragment();
+
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
+
+        // also re-load the favorite equation frame with default N/A states
+        // may change later to only load when a user logs in.
+        favoriteEquations showFavorites = new favoriteEquations();
+        getFragmentManager().beginTransaction().add(R.id.favorite_equation_frame, showFavorites).commit();
+    }
+
     public void loadFavoriteEquations(){
         //Toast.makeText(getApplication(), "Hit", Toast.LENGTH_SHORT).show();
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
@@ -1167,6 +1189,10 @@ public class MainActivity extends ActionBarActivity {
             //Toast.makeText(getApplication(), "rwar" + currentUserId + " c " + currentUser, Toast.LENGTH_SHORT).show();
             s.moveToNext();
         }
+    }
+    public void guestLogin(View v)
+    {
+        showGuestButtons(v);
     }
 
     ////Object references/////////////////////////////////////////////////////////

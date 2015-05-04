@@ -35,10 +35,13 @@ public final class NumberContract {
         public static final String EQUATION_CURRENT_USER = "equation_current_user";
         public static final String SAVED_EQUATION_ONE = "equation1";
         public static final String SAVED_EQUATION_ONE_NAME = "equation1_name";
+        //public static final String SAVED_EQUATION_ONE_USED_VARIABLES = "equation1_vars";
         public static final String SAVED_EQUATION_TWO = "equation2";
         public static final String SAVED_EQUATION_TWO_NAME  = "equation2_name";
+        //public static final String SAVED_EQUATION_TWO_USED_VARIABLES = "equation2_vars";
         public static final String SAVED_EQUATION_THREE = "equation3";
         public static final String SAVED_EQUATION_THREE_NAME  = "equation3_name";
+        //public static final String SAVED_EQUATION_THREE_USED_VARIABLES = "equation3_vars";
         // SELECT equations, equation_current_user, equation1, equation1_name, equation2, equation2_name, equation3, equation3_name FROM equations
     }
 }

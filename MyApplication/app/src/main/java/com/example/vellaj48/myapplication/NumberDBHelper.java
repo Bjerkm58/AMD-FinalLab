@@ -36,10 +36,13 @@ public class NumberDBHelper extends SQLiteOpenHelper {
                 NumberContract.EquationEntry.EQUATION_CURRENT_USER + " TEXT," +
                 NumberContract.EquationEntry.SAVED_EQUATION_ONE + " TEXT," +
                 NumberContract.EquationEntry.SAVED_EQUATION_ONE_NAME + " TEXT," +
+              //  NumberContract.EquationEntry.SAVED_EQUATION_ONE__USED_VARIABLES + " TEXT," +
                 NumberContract.EquationEntry.SAVED_EQUATION_TWO + " TEXT," +
                 NumberContract.EquationEntry.SAVED_EQUATION_TWO_NAME + " TEXT," +
+                //  NumberContract.EquationEntry.SAVED_EQUATION_TWO__USED_VARIABLES + " TEXT," +
                 NumberContract.EquationEntry.SAVED_EQUATION_THREE + " TEXT," +
                 NumberContract.EquationEntry.SAVED_EQUATION_THREE_NAME + " TEXT" +" )");
+        //  NumberContract.EquationEntry.SAVED_EQUATION_THREE__USED_VARIABLES + " TEXT," +
 
         /*
            public static final String EQUATION_TABLE_NAME = "equations";

@@ -614,6 +614,22 @@ public class MainActivity extends ActionBarActivity {
         getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
         getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
     }
+    public void showFriendsSearch(View v) {
+        find_New_Friends showMyButtons = new find_New_Friends();
+
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.equation_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.equation_Frame, showMyButtons).commit();
+    }
+    public void showFriends(View v){
+        friends_fragment showMyButtons = new friends_fragment();
+
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
+    }
+    public void loadFriendsFragments(View v){
+        showFriendsSearch(v);
+        showFriends(v);
+    }
     public void showGuestButtons(View v)   {
         guest_buttons showMyButtons = new guest_buttons();
 
@@ -1195,6 +1211,26 @@ public class MainActivity extends ActionBarActivity {
         showGuestButtons(v);
         usingGuestButtons = true;
     }
+    public void getFriendsEquation(View v)    {
+        // when you click on one of a friends favorite equations,
+        // you can import it as a VARIABLE to your variables table in the DB
+    }
+    public void findNewFriends(View v) {
+        // this will corelate to a "search" button in the friends fragment
+        // which will allow users to search the DB for friends with that username
+        // if they find that friend the button to "add friend" will become un-hidden
+    }
+    public void addFriend(View v){
+        // this button is only clickable after the findNewFriends button has been clicked AND
+        // the findNewFriends button found a user with that username in the DB
+        // when this button is clicked it adds the found user to the current users friends list
+    }
+    public void viewOPendingRequests(View v){
+        /*
+        as per krohns request, this button will display all of your
+        pending invitations both incomming and outgoing
+         */
+    }
 
     ////Object references/////////////////////////////////////////////////////////
 
@@ -1287,6 +1323,14 @@ public class MainActivity extends ActionBarActivity {
             findViewById(R.id.guestEquals).setEnabled(false);
 
         }
+    }
+    public void inviteReceived(){
+        // this method will display a notification
+        // on the event that you have receieved a friend request
+    }
+    public void inviteAccepted(){
+        // this method will display a notification
+        // on the event an invitation of yours has been accepted.
     }
 
     //////Helper Methods/////////////////////////////////////////////////////////

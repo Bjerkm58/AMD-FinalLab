@@ -1,0 +1,20 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.vellaj48.myapplication.friends_fragment">
+
+    <!--
+
+
+
+
+    This fragment displays all your current friends probably with a list view
+    When you click on a friend you can see their favorite equations (and maybe their variables)
+    clicking on their saved equations will then import those equations to your database
+
+
+
+        -->
+
+
+</RelativeLayout>

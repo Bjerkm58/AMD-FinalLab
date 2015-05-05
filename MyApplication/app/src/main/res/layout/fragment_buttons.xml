@@ -285,11 +285,9 @@
         android:text="Log out"
         android:id="@+id/button27"
         android:onClick="logout"
-        android:layout_alignBaseline="@+id/button5"
-        android:layout_alignBottom="@+id/button5"
-        android:layout_alignLeft="@+id/button19"
-        android:layout_alignStart="@+id/button19"
-        android:layout_toStartOf="@+id/button6" />
+        android:layout_below="@+id/button4"
+        android:layout_toRightOf="@+id/button5"
+        android:layout_toEndOf="@+id/button5" />
 
     <Button
         android:layout_width="wrap_content"
@@ -332,10 +330,9 @@
         android:text="Clear Variables"
         android:id="@+id/button30"
         android:onClick="clearVariables"
-        android:layout_alignBaseline="@+id/button27"
-        android:layout_alignBottom="@+id/button27"
-        android:layout_toLeftOf="@+id/editText11"
-        android:layout_toStartOf="@+id/editText11" />
+        android:layout_below="@+id/button4"
+        android:layout_alignLeft="@+id/button29"
+        android:layout_alignStart="@+id/button29" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -345,5 +342,16 @@
         android:layout_below="@+id/button12"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Friends"
+        android:id="@+id/button32"
+        android:layout_below="@+id/button4"
+        android:layout_toRightOf="@+id/button27"
+        android:layout_alignRight="@+id/button28"
+        android:layout_alignEnd="@+id/button28"
+        android:onClick="loadFriendsFragments" />
 
 </RelativeLayout>

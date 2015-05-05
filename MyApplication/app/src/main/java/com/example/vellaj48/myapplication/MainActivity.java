@@ -602,52 +602,6 @@ public class MainActivity extends ActionBarActivity {
 
         return rslt;
     }
-    public void showEquationSteps() {
-        equationSteps steps = new equationSteps();
-
-        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
-        getFragmentManager().beginTransaction().add(R.id.button_Frame, steps).commit();
-    }
-    public void showButtons(View v) {
-        ButtonsFragment showMyButtons = new ButtonsFragment();
-
-        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
-        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
-    }
-    public void showFriendsSearch(View v) {
-        find_New_Friends showMyButtons = new find_New_Friends();
-
-        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.equation_Frame)).commit();
-        getFragmentManager().beginTransaction().add(R.id.equation_Frame, showMyButtons).commit();
-    }
-    public void showFriends(View v){
-        friends_fragment showMyButtons = new friends_fragment();
-
-        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
-        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
-    }
-    public void loadFriendsFragments(View v){
-        showFriendsSearch(v);
-        showFriends(v);
-    }
-    public void showGuestButtons(View v)   {
-        guest_buttons showMyButtons = new guest_buttons();
-
-        // remove the saved equations fragment as it is a registered users option
-        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.favorite_equation_frame)).commit();
-
-        //do the rest of the stuff normalls
-        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
-        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
-    }
-    public void showEquationSteps(View v) {  // used for showing equation steps button
-        equationSteps expression = (equationSteps) getFragmentManager().findFragmentById(R.id.button_Frame);
-        expression.setEquationSteps(answer);
-    }
-    public void showVariableCreatorFragment(View v) {
-        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.equation_Frame)).commit();
-        getFragmentManager().beginTransaction().add(R.id.equation_Frame, new createVariables()).commit();
-    }
     public void createVariablesFragment(View v){
         // greys out apropriate buttons
         disableButtons();
@@ -1211,6 +1165,8 @@ public class MainActivity extends ActionBarActivity {
         showGuestButtons(v);
         usingGuestButtons = true;
     }
+
+    // ALL UNFINISHED NEW METHODS TO FINISH THE FINAL LAB
     public void getFriendsEquation(View v)    {
         // when you click on one of a friends favorite equations,
         // you can import it as a VARIABLE to your variables table in the DB
@@ -1231,7 +1187,14 @@ public class MainActivity extends ActionBarActivity {
         pending invitations both incomming and outgoing
          */
     }
-
+    public void inviteReceived(){
+        // this method will display a notification
+        // on the event that you have receieved a friend request
+    }
+    public void inviteAccepted(){
+        // this method will display a notification
+        // on the event an invitation of yours has been accepted.
+    }
     ////Object references/////////////////////////////////////////////////////////
 
     public EditText expression() {
@@ -1324,14 +1287,7 @@ public class MainActivity extends ActionBarActivity {
 
         }
     }
-    public void inviteReceived(){
-        // this method will display a notification
-        // on the event that you have receieved a friend request
-    }
-    public void inviteAccepted(){
-        // this method will display a notification
-        // on the event an invitation of yours has been accepted.
-    }
+
 
     //////Helper Methods/////////////////////////////////////////////////////////
 
@@ -1361,6 +1317,53 @@ public class MainActivity extends ActionBarActivity {
     }
     public boolean lastCharIs(char c){
         return expression().getText().toString().charAt(expression().length() - 1) == c;
+    }
+
+    public void showEquationSteps() {
+        equationSteps steps = new equationSteps();
+
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.button_Frame, steps).commit();
+    }
+    public void showButtons(View v) {
+        ButtonsFragment showMyButtons = new ButtonsFragment();
+
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
+    }
+    public void showFriendsSearch(View v) {
+        find_New_Friends showMyButtons = new find_New_Friends();
+
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.equation_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.equation_Frame, showMyButtons).commit();
+    }
+    public void showFriends(View v){
+        friends_fragment showMyButtons = new friends_fragment();
+
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
+    }
+    public void loadFriendsFragments(View v){
+        showFriendsSearch(v);
+        showFriends(v);
+    }
+    public void showGuestButtons(View v)   {
+        guest_buttons showMyButtons = new guest_buttons();
+
+        // remove the saved equations fragment as it is a registered users option
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.favorite_equation_frame)).commit();
+
+        //do the rest of the stuff normalls
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.button_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.button_Frame, showMyButtons).commit();
+    }
+    public void showEquationSteps(View v) {  // used for showing equation steps button
+        equationSteps expression = (equationSteps) getFragmentManager().findFragmentById(R.id.button_Frame);
+        expression.setEquationSteps(answer);
+    }
+    public void showVariableCreatorFragment(View v) {
+        getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.equation_Frame)).commit();
+        getFragmentManager().beginTransaction().add(R.id.equation_Frame, new createVariables()).commit();
     }
 
     /////ExtDBCode////////////////////////////////////////////////////////////////

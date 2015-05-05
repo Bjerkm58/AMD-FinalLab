@@ -85,6 +85,7 @@ public class MainActivity extends ActionBarActivity {
             }
         };
     }
+    public boolean usingGuestButtons = false;
     public boolean decimalUsed = false;
     public boolean numbersRequired = false;  // used only for after decimal used
     public boolean operatorRequired = false;  // used only for after right parentheses ")"
@@ -1106,8 +1107,8 @@ public class MainActivity extends ActionBarActivity {
         // may change later to only load when a user logs in.
         favoriteEquations showFavorites = new favoriteEquations();
         getFragmentManager().beginTransaction().add(R.id.favorite_equation_frame, showFavorites).commit();
+        usingGuestButtons = false;
     }
-
     public void loadFavoriteEquations(){
         //Toast.makeText(getApplication(), "Hit", Toast.LENGTH_SHORT).show();
         NumberDBHelper n = new NumberDBHelper(getApplicationContext());
@@ -1190,9 +1191,9 @@ public class MainActivity extends ActionBarActivity {
             s.moveToNext();
         }
     }
-    public void guestLogin(View v)
-    {
+    public void guestLogin(View v)    {
         showGuestButtons(v);
+        usingGuestButtons = true;
     }
 
     ////Object references/////////////////////////////////////////////////////////
@@ -1253,20 +1254,39 @@ public class MainActivity extends ActionBarActivity {
     ////Scripts/////////////////////////////////////////////////////////
 
     public void enableButtons(){
-        findViewById(R.id.button29).setEnabled(true);
-        findViewById(R.id.button7).setEnabled(true);
-        findViewById(R.id.useSaved).setEnabled(true);
-        findViewById(R.id.button28).setEnabled(true);
+        if(usingGuestButtons == false) {
+            findViewById(R.id.button29).setEnabled(true);
+            findViewById(R.id.button7).setEnabled(true);
+            findViewById(R.id.useSaved).setEnabled(true);
+            findViewById(R.id.button28).setEnabled(true);
+        }
+        else // usingGuestButtons == true
+        {
+            findViewById(R.id.guestEquals).setEnabled(false);
+        }
     }
     public void disableButtons(){
-        findViewById(R.id.button29).setEnabled(false);
-        findViewById(R.id.button7).setEnabled(false);
-        findViewById(R.id.useSaved).setEnabled(false);
-        findViewById(R.id.button28).setEnabled(false);
+        if(usingGuestButtons == false) {
+            findViewById(R.id.button29).setEnabled(false);
+            findViewById(R.id.button7).setEnabled(false);
+            findViewById(R.id.useSaved).setEnabled(false);
+            findViewById(R.id.button28).setEnabled(false);
+        }
+        else // usingGuestButtons == true
+        {
+            findViewById(R.id.guestEquals).setEnabled(false);
+        }
 
     }
     public void validityCheck(){
-       findViewById(R.id.button7).setEnabled(!nAn());
+        if (usingGuestButtons == false) {
+            findViewById(R.id.button7).setEnabled(!nAn());
+        }
+        else // usingGuestButtons == true
+        {
+            findViewById(R.id.guestEquals).setEnabled(false);
+
+        }
     }
 
     //////Helper Methods/////////////////////////////////////////////////////////
